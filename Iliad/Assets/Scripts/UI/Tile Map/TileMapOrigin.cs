@@ -8,6 +8,9 @@ using System.IO;
 [RequireComponent(typeof(SpriteRenderer))]
 public class TileMapOrigin : MonoBehaviour
 {
+    //The TileMap class that we save to the XML file
+    public TileMap tileMapInfo = new TileMap();
+
     //The file path that holds this tile map's XML data file
     public TextAsset xmlFile;
 
@@ -15,31 +18,18 @@ public class TileMapOrigin : MonoBehaviour
     [HideInInspector]
     public Texture sourceTileSheet = null;
 
-    //The width and height of each tile in pixel size
-    [HideInInspector]
-    public int pixelWidth = 32;
-
-    //The width and height of each tile on Unity's grid
-    [HideInInspector]
-    public float tileSize = 1;
-
     //Number of tiles to the left of the origin
-    [HideInInspector]
-    public int tilesLeft = 0;
+    /*[HideInInspector]
+    public int tilesLeft = 0;*/
     //Number of tiles to the right of the origin
-    [HideInInspector]
-    public int tilesRight = 0;
+    /*[HideInInspector]
+    public int tilesRight = 0;*/
     //Number of tiles above the origin
-    [HideInInspector]
-    public int tilesUp = 0;
+    /*[HideInInspector]
+    public int tilesUp = 0;*/
     //Number of tiles below the origin
-    [HideInInspector]
-    public int tilesDown = 0;
-
-    //The 2D list that contains every individual tile for this map
-    private List<List<TileInfo>> tileGrid = new List<List<TileInfo>>();
-    //2D list that contains all collision verteces for each tile in this tile map
-    private List<List<Vector3>> colliderVerts;
+    /*[HideInInspector]
+    public int tilesDown = 0;*/
     
 
 
@@ -48,22 +38,22 @@ public class TileMapOrigin : MonoBehaviour
     public int DetermineGridChange(int newValue_ = 0, Directions changeDirection_ = Directions.None)
     {
         //Making sure that this tile grid is initialized
-        if (this.tileGrid.Count == 0)
+        if (this.tileMapInfo.TileGrid.Count == 0)
         {
-            this.tileGrid = new List<List<TileInfo>>();
+            this.tileMapInfo.TileGrid = new List<List<TileInfo>>();
 
             //Loops through to add as many columns as we need
-            for(int w = 0; w < (this.tilesLeft + this.tilesRight); ++w)
+            for(int w = 0; w < (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight); ++w)
             {
                 List<TileInfo> newListToAdd = new List<TileInfo>();
 
                 //Loops through each column to add as many rows as we need
-                for(int h = 0; h < (this.tilesUp + this.tilesDown); ++h)
+                for(int h = 0; h < (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown); ++h)
                 {
                     newListToAdd.Add(new TileInfo());
                 }
 
-                this.tileGrid.Add(newListToAdd);
+                this.tileMapInfo.TileGrid.Add(newListToAdd);
             }
         }
 
@@ -79,19 +69,19 @@ public class TileMapOrigin : MonoBehaviour
         switch(changeDirection_)
         {
             case Directions.Up:
-                current = this.tilesUp;
+                current = this.tileMapInfo.TilesUp;
                 break;
 
             case Directions.Down:
-                current = this.tilesDown;
+                current = this.tileMapInfo.TilesDown;
                 break;
 
             case Directions.Left:
-                current = this.tilesLeft;
+                current = this.tileMapInfo.TilesLeft;
                 break;
 
             case Directions.Right:
-                current = this.tilesRight;
+                current = this.tileMapInfo.TilesRight;
                 break;
         }
 
@@ -139,64 +129,64 @@ public class TileMapOrigin : MonoBehaviour
         //Inserts new rows at the beginning of the first list
         if (direction_ == Directions.Up)
         {
-            this.tilesUp += numToAdd_;
+            this.tileMapInfo.TilesUp += numToAdd_;
 
             //Loops through a number of times equal to the num to add
             for (int n = 0; n < numToAdd_; ++n)
             {
-                this.tileGrid.Insert(0, new List<TileInfo>(this.tilesLeft + this.tilesRight));
+                this.tileMapInfo.TileGrid.Insert(0, new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
             }
         }
         //Adds new rows at the end of the first list
         else if (direction_ == Directions.Down)
         {
-            this.tilesDown += numToAdd_;
+            this.tileMapInfo.TilesDown += numToAdd_;
 
             //Loops through a number of times equal to the num to add
             for (int n = 0; n < numToAdd_; ++n)
             {
-                this.tileGrid.Add(new List<TileInfo>(this.tilesLeft + this.tilesRight));
+                this.tileMapInfo.TileGrid.Add(new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
             }
         }
         //Loops through each row in the first list and inserts new columns at the beginning of the inner lists
         else if (direction_ == Directions.Left)
         {
-            this.tilesLeft += numToAdd_;
+            this.tileMapInfo.TilesLeft += numToAdd_;
 
             //Loops through each row
-            for (int r = 0; r < this.tileGrid.Count; ++r)
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
                 for (int n = 0; n < numToAdd_; ++n)
                 {
-                    this.tileGrid[r].Insert(0, new TileInfo());
+                    this.tileMapInfo.TileGrid[r].Insert(0, new TileInfo());
                 }
             }
         }
         //Loops through each row in the first list and inserts new columns at the end of the inner lists
         else if (direction_ == Directions.Right)
         {
-            this.tilesRight += numToAdd_;
+            this.tileMapInfo.TilesRight += numToAdd_;
 
             //Loops through each row
-            for (int r = 0; r < this.tileGrid.Count; ++r)
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
                 for (int n = 0; n < numToAdd_; ++n)
                 {
-                    this.tileGrid[r].Add(new TileInfo());
+                    this.tileMapInfo.TileGrid[r].Add(new TileInfo());
                 }
             }
         }
 
         //Repaints the this tile map's texture
         this.PaintTexture();
-        Debug.Log("Increase Grid End. Grid Size: " + this.tileGrid.Count + ", " + this.tileGrid[0].Count);
+        Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
     }
 
 
     //Function that decreases the tile grid in the direction given
     public void DecreaseGrid(Directions direction_ = Directions.Right, int numToRemove_ = 1)
     {
-        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileGrid.Count + ", " + this.tileGrid[0].Count);
+        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
         //Does nothing if the number to remove isn't a positive number
         if (numToRemove_ < 1)
             return;
@@ -207,88 +197,88 @@ public class TileMapOrigin : MonoBehaviour
         if (direction_ == Directions.Up)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
-            if (tilesRemoved > this.tilesUp)
+            if (tilesRemoved > this.tileMapInfo.TilesUp)
             {
-                tilesRemoved = this.tilesUp;
+                tilesRemoved = this.tileMapInfo.TilesUp;
             }
 
-            this.tilesUp -= tilesRemoved;
+            this.tileMapInfo.TilesUp -= tilesRemoved;
 
             //Loops through a number of times equal to the rows removed
             for (int n = 0; n < tilesRemoved; ++n)
             {
                 //Nulls and destroys each tile in the removed row
-                for (int r = 0; r < this.tileGrid[0].Count; ++r)
+                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
                 {
-                    this.tileGrid[0][r] = null;
+                    this.tileMapInfo.TileGrid[0][r] = null;
                 }
 
-                this.tileGrid.RemoveAt(0);
+                this.tileMapInfo.TileGrid.RemoveAt(0);
             }
         }
         //Removes rows at the end of the first list
         else if (direction_ == Directions.Down)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
-            if (tilesRemoved > this.tilesDown)
+            if (tilesRemoved > this.tileMapInfo.TilesDown)
             {
-                tilesRemoved = this.tilesDown;
+                tilesRemoved = this.tileMapInfo.TilesDown;
             }
 
-            this.tilesDown -= tilesRemoved;
+            this.tileMapInfo.TilesDown -= tilesRemoved;
             
             //Loops through a number of times equal to the rows removed
             for (int n = 0; n < tilesRemoved; ++n)
             {
                 //Nulls and destroys each tile in the removed row
-                for (int r = 0; r < this.tileGrid[0].Count; ++r)
+                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
                 {
-                    this.tileGrid[this.tileGrid.Count - 1][r] = null;
+                    this.tileMapInfo.TileGrid[this.tileMapInfo.TileGrid.Count - 1][r] = null;
                 }
 
-                this.tileGrid.RemoveAt(this.tileGrid.Count - 1);
+                this.tileMapInfo.TileGrid.RemoveAt(this.tileMapInfo.TileGrid.Count - 1);
             }
         }
         //Loops through each row in the first list and removes columns at the beginning of the inner lists
         else if (direction_ == Directions.Left)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
-            if (tilesRemoved > this.tilesLeft)
+            if (tilesRemoved > this.tileMapInfo.TilesLeft)
             {
-                tilesRemoved = this.tilesLeft;
+                tilesRemoved = this.tileMapInfo.TilesLeft;
             }
 
-            this.tilesLeft -= tilesRemoved;
+            this.tileMapInfo.TilesLeft -= tilesRemoved;
 
             //Loops through each row
-            for (int r = 0; r < this.tileGrid.Count; ++r)
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
                 //Destroys, nulls, and removes the first tile in each row
                 for (int n = 0; n < tilesRemoved; ++n)
                 {
-                    this.tileGrid[r][0] = null;
-                    this.tileGrid[r].RemoveAt(0);
+                    this.tileMapInfo.TileGrid[r][0] = null;
+                    this.tileMapInfo.TileGrid[r].RemoveAt(0);
                 }
             }
         }
         else if (direction_ == Directions.Right)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
-            if (tilesRemoved > this.tilesRight)
+            if (tilesRemoved > this.tileMapInfo.TilesRight)
             {
-                tilesRemoved = this.tilesRight;
+                tilesRemoved = this.tileMapInfo.TilesRight;
             }
 
-            this.tilesRight -= tilesRemoved;
+            this.tileMapInfo.TilesRight -= tilesRemoved;
 
             //Loops through each row
-            for (int r = 0; r < this.tileGrid.Count; ++r)
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
                 //Destroys, nulls, and removes the last tile in each row
                 for (int n = 0; n < tilesRemoved; ++n)
                 {
-                    this.tileGrid[r][this.tileGrid.Count - 1] = null;
-                    this.tileGrid[r].RemoveAt(this.tileGrid.Count - 1);
+                    this.tileMapInfo.TileGrid[r][this.tileMapInfo.TileGrid.Count - 1] = null;
+                    this.tileMapInfo.TileGrid[r].RemoveAt(this.tileMapInfo.TileGrid.Count - 1);
                 }
             }
         }
@@ -310,22 +300,22 @@ public class TileMapOrigin : MonoBehaviour
         float roundedXCoord = localPos.x;
         if (roundedXCoord >= 0)
         {
-            roundedXCoord = Mathf.Ceil(roundedXCoord / this.tileSize) * this.tileSize;
+            roundedXCoord = Mathf.Ceil(roundedXCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
         }
         else
         {
-            roundedXCoord = Mathf.Floor(roundedXCoord / this.tileSize) * this.tileSize;
+            roundedXCoord = Mathf.Floor(roundedXCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
         }
 
         //And we do the same for the local Y position as well
         float roundedYCoord = localPos.y;
         if (roundedYCoord >= 0)
         {
-            roundedYCoord = Mathf.Ceil(roundedYCoord / this.tileSize) * this.tileSize;
+            roundedYCoord = Mathf.Ceil(roundedYCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
         }
         else
         {
-            roundedYCoord = Mathf.Floor(roundedYCoord / this.tileSize) * this.tileSize;
+            roundedYCoord = Mathf.Floor(roundedYCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
         }
 
         /*Sets the local position to the new, rounded grid locations, and
@@ -340,66 +330,66 @@ public class TileMapOrigin : MonoBehaviour
         if (localPos.x >= 0 && localPos.y >= 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x > (this.tilesRight * this.tileSize) || localPos.y > (this.tilesUp * this.tileSize))
+            if (localPos.x > (this.tileMapInfo.TilesRight * this.tileMapInfo.TileGridSize) || localPos.y > (this.tileMapInfo.TilesUp * this.tileMapInfo.TileGridSize))
             {
                 return;
             }
 
             //Saves the location of this tile in the 2D tile grid array
-            row = Mathf.Abs( Mathf.RoundToInt(localPos.y) - this.tilesUp);
-            col = Mathf.RoundToInt(localPos.x) + this.tilesLeft -1;
+            row = Mathf.Abs( Mathf.RoundToInt(localPos.y) - this.tileMapInfo.TilesUp);
+            col = Mathf.RoundToInt(localPos.x) + this.tileMapInfo.TilesLeft -1;
         }
         //If this tile is in the Top-Left quadrant
         else if (localPos.x < 0 && localPos.y >= 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x < (-this.tilesLeft * this.tileSize) || localPos.y > (this.tilesUp * this.tileSize))
+            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.tileMapInfo.TileGridSize) || localPos.y > (this.tileMapInfo.TilesUp * this.tileMapInfo.TileGridSize))
             {
                 return;
             }
 
             //Saves the location of this tile in the 2D tile grid array
-            row = Mathf.Abs( Mathf.RoundToInt(localPos.y) - this.tilesUp);
-            col = Mathf.RoundToInt(localPos.x) + this.tilesLeft;
+            row = Mathf.Abs( Mathf.RoundToInt(localPos.y) - this.tileMapInfo.TilesUp);
+            col = Mathf.RoundToInt(localPos.x) + this.tileMapInfo.TilesLeft;
         }
         //If this tile is in the Bottom-Left quadrant
         else if (localPos.x < 0 && localPos.y < 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x < (-this.tilesLeft * this.tileSize) || localPos.y < (-this.tilesDown * this.tileSize))
+            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.tileMapInfo.TileGridSize) || localPos.y < (-this.tileMapInfo.TilesDown * this.tileMapInfo.TileGridSize))
             {
                 return;
             }
 
             //Saves the location of this tile in the 2D tile grid array
-            row = Mathf.RoundToInt(localPos.y) + this.tilesUp + 1;
-            col = Mathf.RoundToInt(localPos.x) + this.tilesLeft;
+            row = Mathf.RoundToInt(localPos.y) + this.tileMapInfo.TilesUp + 1;
+            col = Mathf.RoundToInt(localPos.x) + this.tileMapInfo.TilesLeft;
         }
         //If this tile is in the Bottom-Right quadrant
         else if (localPos.x >= 0 && localPos.y < 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x > (this.tilesRight * this.tileSize) || localPos.y < -(this.tilesDown * this.tileSize))
+            if (localPos.x > (this.tileMapInfo.TilesRight * this.tileMapInfo.TileGridSize) || localPos.y < -(this.tileMapInfo.TilesDown * this.tileMapInfo.TileGridSize))
             {
                 return;
             }
 
             //Saves the location of this tile in the 2D tile grid array
-            row = Mathf.RoundToInt(localPos.y) + this.tilesUp + 1;
-            col = Mathf.RoundToInt(localPos.x) + this.tilesLeft - 1;
+            row = Mathf.RoundToInt(localPos.y) + this.tileMapInfo.TilesUp + 1;
+            col = Mathf.RoundToInt(localPos.x) + this.tileMapInfo.TilesLeft - 1;
         }
 
         //Sets the new tile to that position in the array of tiles
         if (tileToSet_ != null)
         {
-            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileGrid.Count + ", " + this.tileGrid[row].Count);
-            this.tileGrid[row][col] = tileToSet_;
+            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[row].Count);
+            this.tileMapInfo.TileGrid[row][col] = tileToSet_;
         }
         //Otherwise, deletes the tile that's currently there
         else
         {
             Debug.Log("DELETE TILE");
-            this.tileGrid[row][col] = null;
+            this.tileMapInfo.TileGrid[row][col] = null;
         }
 
         //Repaints the this tile map's texture for this location only
@@ -411,26 +401,26 @@ public class TileMapOrigin : MonoBehaviour
     private void PaintTexture()
     {
         //Created a new Texture2D that will hold all of the pixel data for this tile map
-        Texture2D updatedTexture = new Texture2D(this.pixelWidth * this.tileGrid.Count,
-                                                this.pixelWidth * this.tileGrid[0].Count);
+        Texture2D updatedTexture = new Texture2D(this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid.Count,
+                                                this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid[0].Count);
 
         //This variable holds the color of the current pixel
         Color currentPixel;
 
         //Loops through each row of columns
-        for(int r = 0; r < this.tileGrid.Count; ++r)
+        for(int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
         {
             //Loops through each column of tiles
-            for(int c = 0; c < this.tileGrid[0].Count; ++c)
+            for(int c = 0; c < this.tileMapInfo.TileGrid[0].Count; ++c)
             {
                 //Loops through each pixel for the tile's width
-                for(int w = 0; w < this.pixelWidth; ++w)
+                for(int w = 0; w < this.tileMapInfo.TilePixelSize; ++w)
                 {
                     //Loops through each pixel for the tile's height
-                    for(int h = 0; h < this.pixelWidth; ++h)
+                    for(int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
                     {
                         //If the tile is null, we just put a blank, black tile
-                        if (this.tileGrid[r][c] == null)
+                        if (this.tileMapInfo.TileGrid[r][c] == null)
                         {
                             currentPixel = Color.black;
                         }
@@ -438,15 +428,15 @@ public class TileMapOrigin : MonoBehaviour
                         else
                         {
                             //Finding the exact pixel on the source tile map
-                            int pixelX = w + (this.tileGrid[r][c].tileTextureCoordsX * this.pixelWidth);
-                            int pixelY = h + (this.tileGrid[r][c].tileTextureCoordsY * this.pixelWidth);
+                            int pixelX = w + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsX * this.tileMapInfo.TilePixelSize);
+                            int pixelY = h + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsY * this.tileMapInfo.TilePixelSize);
 
                             //currentPixel = this.sourceTileSheet.texture.GetPixel(pixelX, pixelY);
                         }
 
                         //Sets the pixel color at the correct location on the texture
-                        int finalCoordX = (this.pixelWidth * c) + w;
-                        int finalCoordY = (this.pixelWidth * r) + h;
+                        int finalCoordX = (this.tileMapInfo.TilePixelSize * c) + w;
+                        int finalCoordY = (this.tileMapInfo.TilePixelSize * r) + h;
                         //updatedTexture.SetPixel(finalCoordX, finalCoordY, currentPixel);
                     }
                 }
@@ -470,22 +460,12 @@ public class TileMapOrigin : MonoBehaviour
         {
              return;
         }
-
-        //Creating a new instance of the serializable TileMap class to write to our XML file
-        TileMap createdMap = new TileMap();
-        //Setting the attributes of the created Tile Map
-        createdMap.TilePixelSize = this.pixelWidth;
-        createdMap.TileGridSize = this.tileSize;
-        createdMap.TileGrid = this.tileGrid;
-        createdMap.TilesUp = this.tilesUp;
-        createdMap.TilesDown = this.tilesDown;
-        createdMap.TilesLeft = this.tilesLeft;
-        createdMap.TilesRight = this.tilesRight;
+        
 
         //Using an XML serializer and writer, we write this data to our XML file
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        serializer.Serialize(writer.BaseStream, createdMap);
+        serializer.Serialize(writer.BaseStream, this.tileMapInfo);
         writer.Close();
 
 
@@ -503,7 +483,7 @@ public class TileMapOrigin : MonoBehaviour
     //Function called internally to write this Tile Map's data to its given XML file
     public void SaveTileMapData()
     {
-        Debug.Log(this.name + " U: " + this.tilesUp + ", D: " + this.tilesDown + ", L: " + this.tilesLeft + ", R: " + this.tilesRight);
+        Debug.Log(this.name + " U: " + this.tileMapInfo.TilesUp + ", D: " + this.tileMapInfo.TilesDown + ", L: " + this.tileMapInfo.TilesLeft + ", R: " + this.tileMapInfo.TilesRight);
         //XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
         //StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
         //serializer.Serialize(writer.BaseStream)

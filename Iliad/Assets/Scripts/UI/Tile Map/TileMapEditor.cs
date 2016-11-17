@@ -94,14 +94,14 @@ class TileMapEditor : EditorWindow
                                                         GUILayout.Width(250)) as Sprite;
 
                 //Created an input field to set the number of pixels shown for each tile
-                this.mapOrigin.pixelWidth = EditorGUILayout.IntField("Tile Pixel Size", this.mapOrigin.pixelWidth, GUILayout.Width(200));
-                if (this.mapOrigin.pixelWidth < 1)
+                this.mapOrigin.tileMapInfo.TilePixelSize = EditorGUILayout.IntField("Tile Pixel Size", this.mapOrigin.tileMapInfo.TilePixelSize, GUILayout.Width(200));
+                if (this.mapOrigin.tileMapInfo.TilePixelSize < 1)
                 {
-                    this.mapOrigin.pixelWidth = 1;
+                    this.mapOrigin.tileMapInfo.TilePixelSize = 1;
                 }
 
                 //Created an input field to set the width/height of tiles on the map
-                this.mapOrigin.tileSize = EditorGUILayout.FloatField("Tile Grid Height/Width", this.mapOrigin.tileSize, GUILayout.Width(200));
+                this.mapOrigin.tileMapInfo.TileGridSize = EditorGUILayout.FloatField("Tile Grid Height/Width", this.mapOrigin.tileMapInfo.TileGridSize, GUILayout.Width(200));
 
 
                 EditorGUILayout.Space();
@@ -109,7 +109,7 @@ class TileMapEditor : EditorWindow
                 //Grouping the "Tiles Up" and "Tiles Down" input fields on the same line
                 EditorGUILayout.BeginHorizontal();
                 //Created a placeholderint and input field to set the number of rows above the origin
-                int phUP = this.mapOrigin.tilesUp;
+                int phUP = this.mapOrigin.tileMapInfo.TilesUp;
                 phUP = EditorGUILayout.IntField("Rows Up", phUP, GUILayout.Width(200));
 
                 //Preventing the number of tiles from going below 0
@@ -119,13 +119,13 @@ class TileMapEditor : EditorWindow
                 }
 
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phUP != this.mapOrigin.tilesUp)
+                if(phUP != this.mapOrigin.tileMapInfo.TilesUp)
                 {
-                    this.mapOrigin.tilesUp = this.mapOrigin.DetermineGridChange(phUP, Directions.Up);
+                    this.mapOrigin.tileMapInfo.TilesUp = this.mapOrigin.DetermineGridChange(phUP, Directions.Up);
                 }
 
                 //Created a placeholder int and input field to set the number of rows below the origin
-                int phDown = this.mapOrigin.tilesDown;
+                int phDown = this.mapOrigin.tileMapInfo.TilesDown;
                 phDown = EditorGUILayout.IntField("Rows Down", phDown, GUILayout.Width(200));
 
                 //Preventing the number of tiles from going below 0
@@ -135,9 +135,9 @@ class TileMapEditor : EditorWindow
                 }
 
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phDown != this.mapOrigin.tilesDown)
+                if(phDown != this.mapOrigin.tileMapInfo.TilesDown)
                 {
-                    this.mapOrigin.tilesDown = this.mapOrigin.DetermineGridChange(phDown, Directions.Down);
+                    this.mapOrigin.tileMapInfo.TilesDown = this.mapOrigin.DetermineGridChange(phDown, Directions.Down);
                 }
                 EditorGUILayout.EndHorizontal();
 
@@ -145,7 +145,7 @@ class TileMapEditor : EditorWindow
                 //Grouping the "Tiles Left" and "Tiles Down" input fields on the same line
                 EditorGUILayout.BeginHorizontal();
                 //Created a placeholder int and input field to set the number of columns left of the origin
-                int phLeft = this.mapOrigin.tilesLeft;
+                int phLeft = this.mapOrigin.tileMapInfo.TilesLeft;
                 phLeft = EditorGUILayout.IntField("Columns Left", phLeft, GUILayout.Width(200));
 
                 //Preventing the number of tiles from going below 0
@@ -155,13 +155,13 @@ class TileMapEditor : EditorWindow
                 }
 
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phLeft != this.mapOrigin.tilesLeft)
+                if(phLeft != this.mapOrigin.tileMapInfo.TilesLeft)
                 {
-                    this.mapOrigin.tilesLeft = this.mapOrigin.DetermineGridChange(phLeft, Directions.Left);
+                    this.mapOrigin.tileMapInfo.TilesLeft = this.mapOrigin.DetermineGridChange(phLeft, Directions.Left);
                 }
 
                 //Created a placeholder int and input field to set the number of columns right of the origin
-                int phRight = this.mapOrigin.tilesRight;
+                int phRight = this.mapOrigin.tileMapInfo.TilesRight;
                 phRight = EditorGUILayout.IntField("Columns Right", phRight, GUILayout.Width(200));
 
                 //Preventing the number of tiles from going below 0
@@ -171,9 +171,9 @@ class TileMapEditor : EditorWindow
                 }
 
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phRight != this.mapOrigin.tilesRight)
+                if(phRight != this.mapOrigin.tileMapInfo.TilesRight)
                 {
-                    this.mapOrigin.tilesRight = this.mapOrigin.DetermineGridChange(phRight, Directions.Right);
+                    this.mapOrigin.tileMapInfo.TilesRight = this.mapOrigin.DetermineGridChange(phRight, Directions.Right);
                 }
                 EditorGUILayout.EndHorizontal();
 
@@ -248,21 +248,21 @@ class TileMapEditor : EditorWindow
                         Handles.color = this.gridColor;
 
                         //Loops through a number of times equal to how many tiles wide the texture is
-                        for (int w = 0; w < (this.tileMapSprite.texture.width / this.mapOrigin.pixelWidth); ++w)
+                        for (int w = 0; w < (this.tileMapSprite.texture.width / this.mapOrigin.tileMapInfo.TilePixelSize); ++w)
                         {
                             //Draws vertical lines on the texture
-                            Vector3 start = new Vector3(w * this.mapOrigin.pixelWidth * this.zoom, 0);
-                            Vector3 end = new Vector3(w * this.mapOrigin.pixelWidth * this.zoom, this.tileMapSprite.texture.height * this.zoom);
+                            Vector3 start = new Vector3(w * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom, 0);
+                            Vector3 end = new Vector3(w * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom, this.tileMapSprite.texture.height * this.zoom);
 
                             Handles.DrawLine(start, end);
                         }
 
                         //Loops through a number of times equal to how many tiles high the texture is
-                        for (int h = 0; h < (this.tileMapSprite.texture.height / this.mapOrigin.pixelWidth); ++h)
+                        for (int h = 0; h < (this.tileMapSprite.texture.height / this.mapOrigin.tileMapInfo.TilePixelSize); ++h)
                         {
                             //Draws horizontal lines on the texture
-                            Vector3 start = new Vector3(0, h * this.mapOrigin.pixelWidth * this.zoom);
-                            Vector3 end = new Vector3(this.tileMapSprite.texture.width * this.zoom, h * this.mapOrigin.pixelWidth * this.zoom);
+                            Vector3 start = new Vector3(0, h * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom);
+                            Vector3 end = new Vector3(this.tileMapSprite.texture.width * this.zoom, h * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom);
 
                             Handles.DrawLine(start, end);
                         }
@@ -277,12 +277,12 @@ class TileMapEditor : EditorWindow
                             Handles.color = this.hilightTileColor;
 
                             //Finds the XY coordinate on the tile map texture
-                            int xCoord = Mathf.FloorToInt(Event.current.mousePosition.x / (this.mapOrigin.pixelWidth * this.zoom));
-                            int yCoord = Mathf.FloorToInt(Event.current.mousePosition.y / (this.mapOrigin.pixelWidth * this.zoom));
+                            int xCoord = Mathf.FloorToInt(Event.current.mousePosition.x / (this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom));
+                            int yCoord = Mathf.FloorToInt(Event.current.mousePosition.y / (this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom));
 
                             //Handles.DrawSolidRectangleWithOutline(new Rect(0, 0, Event.current.mousePosition.x, Event.current.mousePosition.y), new Color(0, 1, 0, 0.1f), Color.green);
-                            Handles.DrawSolidRectangleWithOutline(new Rect(xCoord * this.mapOrigin.pixelWidth * this.zoom, yCoord * this.mapOrigin.pixelWidth * this.zoom,
-                                                                           this.mapOrigin.pixelWidth * this.zoom, this.mapOrigin.pixelWidth * this.zoom),
+                            Handles.DrawSolidRectangleWithOutline(new Rect(xCoord * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom, yCoord * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom,
+                                                                           this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom, this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom),
                                                                            new Color(this.hilightTileColor.r, this.hilightTileColor.g, this.hilightTileColor.b, 0.1f), this.hilightTileColor);
 
                             //When the player clicks on a new tile, that one is set to the current selection
@@ -297,10 +297,10 @@ class TileMapEditor : EditorWindow
 
                         //Draws a box around the currently selected tile
                         Handles.color = this.selectedTileColor;
-                        Handles.DrawSolidRectangleWithOutline(new Rect(this.selectedTile[0] * this.mapOrigin.pixelWidth * this.zoom,
-                                                                       this.selectedTile[1] * this.mapOrigin.pixelWidth * this.zoom,
-                                                                       this.mapOrigin.pixelWidth * this.zoom,
-                                                                       this.mapOrigin.pixelWidth * this.zoom),
+                        Handles.DrawSolidRectangleWithOutline(new Rect(this.selectedTile[0] * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom,
+                                                                       this.selectedTile[1] * this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom,
+                                                                       this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom,
+                                                                       this.mapOrigin.tileMapInfo.TilePixelSize * this.zoom),
                                                                        new Color(this.selectedTileColor.r, this.selectedTileColor.g, this.selectedTileColor.b, 0.1f),
                                                                        this.selectedTileColor);
 
@@ -461,17 +461,17 @@ class TileMapEditor : EditorWindow
         Vector3[] verts = new Vector3[]
         {
             //Top Left
-            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tilesLeft,
-                        this.mapOrigin.transform.position.y + this.mapOrigin.tilesUp, 0) * this.mapOrigin.tileSize,
+            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft,
+                        this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
             //Top Right
-            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tilesRight,
-                        this.mapOrigin.transform.position.y + this.mapOrigin.tilesUp, 0) * this.mapOrigin.tileSize,
+            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight,
+                        this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
             //Bottom Right
-            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tilesRight,
-                        this.mapOrigin.transform.position.y - this.mapOrigin.tilesDown, 0) * this.mapOrigin.tileSize,
+            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight,
+                        this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
             //Bottom Left
-            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tilesLeft,
-                        this.mapOrigin.transform.position.y - this.mapOrigin.tilesDown, 0) * this.mapOrigin.tileSize
+            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft,
+                        this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown, 0) * this.mapOrigin.tileMapInfo.TileGridSize
         };
 
         //Creating variables for the box's color
