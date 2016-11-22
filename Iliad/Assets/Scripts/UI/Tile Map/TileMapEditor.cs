@@ -83,6 +83,13 @@ class TileMapEditor : EditorWindow
             //Setting it so that this whole editor is within a scroll view
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, true, true);
 
+            //Creating a button that tells the selected tile map to save its data to an XML
+            bool shouldSave = GUILayout.Button("Save XML", GUILayout.Width(300));
+            if(shouldSave)
+            {
+                this.mapOrigin.SaveTileMapData();
+            }
+
             //Creating a fold out section on the window that lets the user set the width and height of the selected tile map
             this.showDimensions = EditorGUILayout.Foldout(this.showDimensions, "Map Details");
             if (this.showDimensions)
@@ -441,6 +448,9 @@ class TileMapEditor : EditorWindow
         {
             //Saves the reference to the Tile Map component
             this.mapOrigin = Selection.gameObjects[0].GetComponent<TileMapOrigin>();
+
+            //Tells the map origin to load its data from the xml file
+            this.mapOrigin.LoadExistingXML();
         }
         //If the object selected doesn't have a Tile Map
         else
@@ -549,5 +559,17 @@ class TileMapEditor : EditorWindow
 
         //If the function got this far, that means the name is good
         return true;
+    }
+
+
+    //Function called when this window is destroyed. Saves changes to the selected tile map before closing
+    private void OnDestroy()
+    {
+        //Makes sure there's a selected tile map first
+        if(this.mapOrigin != null)
+        {
+            //Tells the tile map to save its data before closing
+            this.mapOrigin.SaveTileMapData();
+        }
     }
 }

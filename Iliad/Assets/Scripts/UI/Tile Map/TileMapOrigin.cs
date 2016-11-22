@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Xml.Serialization;
 using System.IO;
+using System.Text;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class TileMapOrigin : MonoBehaviour
@@ -18,21 +19,8 @@ public class TileMapOrigin : MonoBehaviour
     [HideInInspector]
     public Texture sourceTileSheet = null;
 
-    //Number of tiles to the left of the origin
-    /*[HideInInspector]
-    public int tilesLeft = 0;*/
-    //Number of tiles to the right of the origin
-    /*[HideInInspector]
-    public int tilesRight = 0;*/
-    //Number of tiles above the origin
-    /*[HideInInspector]
-    public int tilesUp = 0;*/
-    //Number of tiles below the origin
-    /*[HideInInspector]
-    public int tilesDown = 0;*/
+
     
-
-
 
     //Function called from TileMapEditor when this tile map's grid is changed. Determines whether IncreaseGrid or DecreaseGrid are called
     public int DetermineGridChange(int newValue_ = 0, Directions changeDirection_ = Directions.None)
@@ -467,26 +455,52 @@ public class TileMapOrigin : MonoBehaviour
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
         serializer.Serialize(writer.BaseStream, this.tileMapInfo);
         writer.Close();
-
-
-        this.SaveTileMapData();
     }
 
 
     //Function called externally from TileMapEditor. Loads in data from a previously existing XML file
     public void LoadExistingXML()
     {
+        //Can't load an existing XML if it doesn't exist....
+        if (this.xmlFile == null)
+            return;
+        
 
+        //Creating a new XML document instance to load the data
+        XmlDocument doc = new XmlDocument();
+        doc.LoadXml(this.xmlFile.text);
+
+        //Making sure that the tileMapInfo isn't null before using it
+        if(this.tileMapInfo == null)
+        {
+            this.tileMapInfo = new TileMap();
+        }
+
+        //Converting the text from the xml file into a byte array
+        UTF8Encoding encoding = new UTF8Encoding();
+        byte[] byteArray = encoding.GetBytes(this.xmlFile.text);
+
+        //Then we create a memory stream for the byte array
+        MemoryStream memStream = new MemoryStream(byteArray);
+        XmlTextWriter textWriter = new XmlTextWriter(memStream, Encoding.UTF8);
+
+        //Deserialize the memory stream to load in the TileMap data
+        XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
+        this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
     }
 
 
     //Function called internally to write this Tile Map's data to its given XML file
     public void SaveTileMapData()
     {
-        Debug.Log(this.name + " U: " + this.tileMapInfo.TilesUp + ", D: " + this.tileMapInfo.TilesDown + ", L: " + this.tileMapInfo.TilesLeft + ", R: " + this.tileMapInfo.TilesRight);
-        //XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
-        //StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        //serializer.Serialize(writer.BaseStream)
+        //Using an XML serializer and writer, we write this data to our XML file
+        XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
+        StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
+        serializer.Serialize(writer.BaseStream, this.tileMapInfo);
+        writer.Close();
+
+        //Refreshes the asset database so that we can look at the file and make sure it saved
+        UnityEditor.AssetDatabase.Refresh();
     }
 
 

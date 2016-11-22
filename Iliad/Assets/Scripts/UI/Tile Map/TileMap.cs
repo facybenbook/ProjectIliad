@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 
 [XmlRoot]
+[SerializeField]
 public class TileMap
 {
     //The texture file that this tile map gets tiles from
