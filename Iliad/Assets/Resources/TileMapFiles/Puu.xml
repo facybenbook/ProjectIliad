@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<TileMap xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <TilePixelSize>32</TilePixelSize>
+  <TileGridSize>1</TileGridSize>
+  <TileGrid>
+    <TileInfo>
+      <tileTextureCoordsX>0</tileTextureCoordsX>
+      <tileTextureCoordsY>0</tileTextureCoordsY>
+      <isSolid>false</isSolid>
+      <tileTestColor>Red</tileTestColor>
+    </TileInfo>
+  </TileGrid>
+  <TilesUp>1</TilesUp>
+  <TilesDown>0</TilesDown>
+  <TilesLeft>0</TilesLeft>
+  <TilesRight>1</TilesRight>
+</TileMap>

@@ -52,18 +52,30 @@ public class TileMap
         this.TileGridSize = 1;
 
         //The number of rows above the origin
-        this.TilesUp = 0;
+        this.TilesUp = 1;
         //The number of rows below the origin
         this.TilesDown = 0;
         //The number of columns right of the origin
-        this.TilesRight = 0;
+        this.TilesRight = 1;
         //The number of columns left of the origin
         this.TilesLeft = 0;
 
         //Creating a 1x1 2D array of tiles
-        this.TileGrid = new List<List<TileInfo>>(1)
+        this.TileGrid = new List<List<TileInfo>>()
         {
-            new List<TileInfo>(0)
+            new List<TileInfo>()
+            {
+                new TileInfo(TestColors.Red)
+            }
         };
     }
+}
+
+
+public enum TestColors
+{
+    None,
+    Red,
+    Blue,
+    Green
 }

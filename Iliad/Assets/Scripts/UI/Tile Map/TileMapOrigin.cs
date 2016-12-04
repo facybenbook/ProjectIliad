@@ -21,14 +21,43 @@ public class TileMapOrigin : MonoBehaviour
 
 
     
+    
+    //Function called from DetermineGridChange. Makes sure our tile map grid is initialized properly
+    private void InitializeTileGrid()
+    {
+        //Getting the rows and columns for the grid
+        int rows = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+        int cols = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
+        //Initializing the 2 dimensional list
+        this.tileMapInfo.TileGrid = new List<List<TileInfo>>(0);
+
+        //Loops through to add as many rows as we need
+        for(int r = 0; r < rows; ++r)
+        {
+            List<TileInfo> newTileRow = new List<TileInfo>();
+
+            //Loops through to add as many columns as we need
+            for(int c = 0; c < cols; ++c)
+            {
+                newTileRow.Add(new TileInfo());
+            }
+
+            //Pushes the new row to our tile grid
+            this.tileMapInfo.TileGrid.Add(newTileRow);
+        }
+    }
+
 
     //Function called from TileMapEditor when this tile map's grid is changed. Determines whether IncreaseGrid or DecreaseGrid are called
     public int DetermineGridChange(int newValue_ = 0, Directions changeDirection_ = Directions.None)
     {
         //Making sure that this tile grid is initialized
-        if (this.tileMapInfo.TileGrid.Count == 0)
+        if (this.tileMapInfo.TileGrid.Count == null)
         {
-            this.tileMapInfo.TileGrid = new List<List<TileInfo>>();
+            this.InitializeTileGrid();
+
+            /*this.tileMapInfo.TileGrid = new List<List<TileInfo>>();
 
             //Loops through to add as many columns as we need
             for(int w = 0; w < (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight); ++w)
@@ -42,7 +71,7 @@ public class TileMapOrigin : MonoBehaviour
                 }
 
                 this.tileMapInfo.TileGrid.Add(newListToAdd);
-            }
+            }*/
         }
 
         //If no value is added, no function is called
@@ -110,6 +139,7 @@ public class TileMapOrigin : MonoBehaviour
     //Function that increases the tile grid in the direction given
     public void IncreaseGrid(Directions direction_ = Directions.Right, int numToAdd_ = 1)
     {
+        Debug.Log("Increase Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
         //Does nothing if the number to add isn't a positive number
         if (numToAdd_ < 1)
             return;
@@ -165,8 +195,9 @@ public class TileMapOrigin : MonoBehaviour
             }
         }
 
+        Debug.Log("Call Paint Texture function still commented out");
         //Repaints the this tile map's texture
-        this.PaintTexture();
+        //this.PaintTexture();
         Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
     }
 
@@ -190,18 +221,31 @@ public class TileMapOrigin : MonoBehaviour
                 tilesRemoved = this.tileMapInfo.TilesUp;
             }
 
+            //Makes sure the grid is at least 1 tile high
+            if (this.tileMapInfo.TilesDown == 0 && (this.tileMapInfo.TilesUp - tilesRemoved) == 0)
+            {
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile high");
+            }
+
             this.tileMapInfo.TilesUp -= tilesRemoved;
+            Debug.Log("Up: " + this.tileMapInfo.TilesUp);
 
             //Loops through a number of times equal to the rows removed
             for (int n = 0; n < tilesRemoved; ++n)
             {
+                Debug.Log("Inside first loop");
                 //Nulls and destroys each tile in the removed row
                 for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
                 {
+                    Debug.Log("Inside second loop");
                     this.tileMapInfo.TileGrid[0][r] = null;
                 }
 
+                Debug.Log("Before remove");
+                Debug.Log("Before remove UP: " + this.tileMapInfo.TileGrid.Count);
                 this.tileMapInfo.TileGrid.RemoveAt(0);
+                Debug.Log("After remove UP: " + this.tileMapInfo.TileGrid.Count);
             }
         }
         //Removes rows at the end of the first list
@@ -213,7 +257,15 @@ public class TileMapOrigin : MonoBehaviour
                 tilesRemoved = this.tileMapInfo.TilesDown;
             }
 
+            //Makes sure the grid is at least 1 tile high
+            if (this.tileMapInfo.TilesUp == 0 && (this.tileMapInfo.TilesDown - tilesRemoved) == 0)
+            {
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile high");
+            }
+
             this.tileMapInfo.TilesDown -= tilesRemoved;
+            Debug.Log("Down: " + this.tileMapInfo.TilesDown);
             
             //Loops through a number of times equal to the rows removed
             for (int n = 0; n < tilesRemoved; ++n)
@@ -256,17 +308,17 @@ public class TileMapOrigin : MonoBehaviour
             {
                 tilesRemoved = this.tileMapInfo.TilesRight;
             }
-
+            
             this.tileMapInfo.TilesRight -= tilesRemoved;
-
+            
             //Loops through each row
             for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
                 //Destroys, nulls, and removes the last tile in each row
                 for (int n = 0; n < tilesRemoved; ++n)
                 {
-                    this.tileMapInfo.TileGrid[r][this.tileMapInfo.TileGrid.Count - 1] = null;
-                    this.tileMapInfo.TileGrid[r].RemoveAt(this.tileMapInfo.TileGrid.Count - 1);
+                    this.tileMapInfo.TileGrid[r][this.tileMapInfo.TileGrid[r].Count - 1] = null;
+                    this.tileMapInfo.TileGrid[r].RemoveAt(this.tileMapInfo.TileGrid[r].Count - 1);
                 }
             }
         }
@@ -274,7 +326,7 @@ public class TileMapOrigin : MonoBehaviour
         //Repaints the this tile map's texture
         this.PaintTexture();
 
-        Debug.Log("Decrease Grid End");
+        Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
     }
 
 
@@ -448,13 +500,19 @@ public class TileMapOrigin : MonoBehaviour
         {
              return;
         }
-        
+
+        //Creating a new, default TileMap class to be serialized and saved
+        TileMap newTileMap = new TileMap();
 
         //Using an XML serializer and writer, we write this data to our XML file
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        serializer.Serialize(writer.BaseStream, this.tileMapInfo);
+        serializer.Serialize(writer.BaseStream, newTileMap);
         writer.Close();
+
+
+        //Saving the new, default TileMap as our own
+        this.tileMapInfo = newTileMap;
     }
 
 
@@ -464,7 +522,6 @@ public class TileMapOrigin : MonoBehaviour
         //Can't load an existing XML if it doesn't exist....
         if (this.xmlFile == null)
             return;
-        
 
         //Creating a new XML document instance to load the data
         XmlDocument doc = new XmlDocument();
@@ -475,7 +532,6 @@ public class TileMapOrigin : MonoBehaviour
         {
             this.tileMapInfo = new TileMap();
         }
-
         //Converting the text from the xml file into a byte array
         UTF8Encoding encoding = new UTF8Encoding();
         byte[] byteArray = encoding.GetBytes(this.xmlFile.text);
@@ -486,7 +542,24 @@ public class TileMapOrigin : MonoBehaviour
 
         //Deserialize the memory stream to load in the TileMap data
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
-        this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
+
+        Debug.LogError("ERROR HERE! The XML file is loading the list incorrectly");
+        //FileStream testStream = File.OpenRead(this.xmlFile.text);
+        TileMap loadedMap = serializer.Deserialize(memStream) as TileMap;
+        //this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
+
+        Debug.Log("LoadExistingXML, existing map grid size start: " + loadedMap.TileGrid.Count + ", " + loadedMap.TileGrid[0].Count);
+
+        for(int r = 0; r < loadedMap.TileGrid.Count; ++r)
+        {
+            for(int p = 0; p < loadedMap.TileGrid[r].Count; ++p)
+            {
+                Debug.Log("Pos " + r + ", " + p + ": " + loadedMap.TileGrid[r][p].tileTestColor);
+            }
+        }
+
+        Debug.Log("LoadExistingXML, existing map grid size end: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        this.tileMapInfo = loadedMap;
     }
 
 

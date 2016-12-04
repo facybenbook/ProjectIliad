@@ -125,6 +125,15 @@ class TileMapEditor : EditorWindow
                     phUP = 0;
                 }
 
+                //Prevents the tile map from having a height of 0
+                if(phUP == 0)
+                {
+                    if(this.mapOrigin.tileMapInfo.TilesDown == 0)
+                    {
+                        phUP = 1;
+                    }
+                }
+
                 //If the placeholder int is different from the current value, the current value is changed
                 if(phUP != this.mapOrigin.tileMapInfo.TilesUp)
                 {
@@ -141,8 +150,17 @@ class TileMapEditor : EditorWindow
                     phDown = 0;
                 }
 
+                //Prevents the tile map from having a height of 0
+                if (phDown == 0)
+                {
+                    if (this.mapOrigin.tileMapInfo.TilesUp == 0)
+                    {
+                        phDown = 1;
+                    }
+                }
+
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phDown != this.mapOrigin.tileMapInfo.TilesDown)
+                if (phDown != this.mapOrigin.tileMapInfo.TilesDown)
                 {
                     this.mapOrigin.tileMapInfo.TilesDown = this.mapOrigin.DetermineGridChange(phDown, Directions.Down);
                 }
@@ -161,8 +179,17 @@ class TileMapEditor : EditorWindow
                     phLeft = 0;
                 }
 
+                //Prevents the tile map from having a width of 0
+                if (phLeft == 0)
+                {
+                    if (this.mapOrigin.tileMapInfo.TilesRight == 0)
+                    {
+                        phLeft = 1;
+                    }
+                }
+
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phLeft != this.mapOrigin.tileMapInfo.TilesLeft)
+                if (phLeft != this.mapOrigin.tileMapInfo.TilesLeft)
                 {
                     this.mapOrigin.tileMapInfo.TilesLeft = this.mapOrigin.DetermineGridChange(phLeft, Directions.Left);
                 }
@@ -177,8 +204,17 @@ class TileMapEditor : EditorWindow
                     phRight = 0;
                 }
 
+                //Prevents the tile map from having a width of 0
+                if (phRight == 0)
+                {
+                    if (this.mapOrigin.tileMapInfo.TilesLeft == 0)
+                    {
+                        phRight = 1;
+                    }
+                }
+
                 //If the placeholder int is different from the current value, the current value is changed
-                if(phRight != this.mapOrigin.tileMapInfo.TilesRight)
+                if (phRight != this.mapOrigin.tileMapInfo.TilesRight)
                 {
                     this.mapOrigin.tileMapInfo.TilesRight = this.mapOrigin.DetermineGridChange(phRight, Directions.Right);
                 }
@@ -387,6 +423,9 @@ class TileMapEditor : EditorWindow
                 UnityEditor.Undo.RecordObject(this.mapOrigin.gameObject, "Set XML File as Text Asset");
                 EditorUtility.SetDirty(this.mapOrigin.gameObject);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+
+                //Saves the XML file
+                this.mapOrigin.SaveTileMapData();
             }
 
         }
@@ -560,7 +599,7 @@ class TileMapEditor : EditorWindow
         //If the function got this far, that means the name is good
         return true;
     }
-
+    
 
     //Function called when this window is destroyed. Saves changes to the selected tile map before closing
     private void OnDestroy()

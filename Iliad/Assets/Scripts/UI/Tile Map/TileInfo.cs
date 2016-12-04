@@ -17,6 +17,10 @@ public class TileInfo
     [XmlElement]
     public bool isSolid = false;
 
+    //Testing enum that should be removed
+    [XmlElement]
+    public TestColors tileTestColor = TestColors.None;
+
 
 
     //Default constructor
@@ -25,6 +29,16 @@ public class TileInfo
         this.tileTextureCoordsX = 0;
         this.tileTextureCoordsY = 0;
         this.isSolid = false;
+    }
+
+    //Test constructor
+    public TileInfo(TestColors color)
+    {
+        this.tileTextureCoordsX = 0;
+        this.tileTextureCoordsY = 0;
+        this.isSolid = false;
+
+        tileTestColor = color;
     }
 
     //Constructor that sets this tile's image. The tile is not solid by default
