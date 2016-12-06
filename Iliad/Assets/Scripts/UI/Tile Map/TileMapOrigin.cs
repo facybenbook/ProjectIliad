@@ -152,7 +152,8 @@ public class TileMapOrigin : MonoBehaviour
             //Loops through a number of times equal to the num to add
             for (int n = 0; n < numToAdd_; ++n)
             {
-                this.tileMapInfo.TileGrid.Insert(0, new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
+                List<TileInfo> newTopRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
+                this.tileMapInfo.TileGrid.Insert(0, newTopRow);
             }
         }
         //Adds new rows at the end of the first list
@@ -163,7 +164,8 @@ public class TileMapOrigin : MonoBehaviour
             //Loops through a number of times equal to the num to add
             for (int n = 0; n < numToAdd_; ++n)
             {
-                this.tileMapInfo.TileGrid.Add(new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
+                List<TileInfo> newBottomRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
+                this.tileMapInfo.TileGrid.Add(newBottomRow);
             }
         }
         //Loops through each row in the first list and inserts new columns at the beginning of the inner lists
@@ -523,6 +525,8 @@ public class TileMapOrigin : MonoBehaviour
         if (this.xmlFile == null)
             return;
 
+        Debug.Log("LoadExistingXML file name: " + this.xmlFile.name);
+
         //Creating a new XML document instance to load the data
         XmlDocument doc = new XmlDocument();
         doc.LoadXml(this.xmlFile.text);
@@ -542,9 +546,51 @@ public class TileMapOrigin : MonoBehaviour
 
         //Deserialize the memory stream to load in the TileMap data
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
+        
+        /*System.Xml.XmlReader xReader = System.Xml.XmlReader.
+        System.Xml.Linq.XDocument testLoadedMap = System.Xml.Linq.XDocument.Load(new XmlReader)*/
+        System.Xml.Linq.XElement xElem = System.Xml.Linq.XElement.Load(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
+        IEnumerable<System.Xml.Linq.XElement> xNode = xElem.Elements();
 
-        Debug.LogError("ERROR HERE! The XML file is loading the list incorrectly");
-        //FileStream testStream = File.OpenRead(this.xmlFile.text);
+        TileMap testMap = new TileMap();
+        testMap = serializer.Deserialize(xElem.CreateReader()) as TileMap;
+        
+        List<List<TileInfo>> testGrid = new List<List<TileInfo>>();
+
+        //Debug.Log("TestMap height: " + (testMap.TilesUp + testMap.TilesDown) + ", width: " + (testMap.TilesLeft + testMap.TilesRight));
+        //Debug.Log("TestMap Grid: " + testMap.TileGrid.Count + ", " + testMap.TileGrid[0].Count);
+
+        //Loops through and copy each row and height of tiles that are SUPPOSED to be there
+        for (int height=0; height < (testMap.TilesUp + testMap.TilesDown); ++height)
+        {
+            testGrid.Add(new List<TileInfo>(testMap.TilesLeft + testMap.TilesRight));
+
+            for(int width=0; width < (testMap.TilesLeft + testMap.TilesRight); ++width)
+            {
+                Debug.Log("Height: " + height + ", Width: " + width + " (Size: " + testMap.TileGrid.Count + "," + testMap.TileGrid[0].Count + ")");
+
+                TileInfo currentTile = testMap.TileGrid[height][width];
+                Debug.Log("MOO");
+                testGrid[height].Add(currentTile);
+            }
+
+            Debug.Log("New row----------------------------------------------");
+        }
+
+        Debug.Log("Test grid size: " + testGrid.Count + ", " + testGrid[0].Count);
+        testMap.TileGrid = testGrid;
+        this.tileMapInfo = testMap;
+        return;
+
+        /*List<List<TileInfo>> testGrid = serializer.Deserialize(xElem.Element("TileGrid").CreateReader()) as List<List<TileInfo>>;
+        Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@ grid size: " + testGrid.Count + ", " + testGrid[0].Count);
+        Debug.Log("LoadExistingXML, testMap grid size: " + testMap.TileGrid.Count + ", " + testMap.TileGrid[0].Count);
+        foreach(var node in xNode)
+        {
+            Debug.Log(node.Value);
+        }*/
+
+
         TileMap loadedMap = serializer.Deserialize(memStream) as TileMap;
         //this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
 
@@ -566,6 +612,9 @@ public class TileMapOrigin : MonoBehaviour
     //Function called internally to write this Tile Map's data to its given XML file
     public void SaveTileMapData()
     {
+        Debug.Log("SaveTileMapData Height/Width: " + (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown) + ", " + (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
+        Debug.Log("SaveTileMapData Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+
         //Using an XML serializer and writer, we write this data to our XML file
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
