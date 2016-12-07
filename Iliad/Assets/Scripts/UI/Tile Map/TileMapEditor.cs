@@ -381,6 +381,7 @@ class TileMapEditor : EditorWindow
             //Created a button that generates a new text source for the selected tile map
             if(GUILayout.Button("Create New Save"))
             {
+                Debug.Log("1");
                 TextAsset xmlFile;
 
                 //First we check to see if a file with that name exists. If not, it's created
@@ -410,14 +411,17 @@ class TileMapEditor : EditorWindow
                         AssetDatabase.Refresh();
                     }
                 }
+                Debug.Log("2");
 
 
                 //Sets the xml source file for the selected map origin to the newly created xml file
                 xmlFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;
                 this.mapOrigin.xmlFile = xmlFile;
+                Debug.Log("3");
 
                 //Tells the tile map to set up the XML info for the new file
                 this.mapOrigin.GenerateBaseXML();
+                Debug.Log("4");
 
                 //Sets the selected tile map and scene as "dirty" which means that they need to be saved
                 UnityEditor.Undo.RecordObject(this.mapOrigin.gameObject, "Set XML File as Text Asset");
