@@ -30,16 +30,21 @@ public class TileMapOrigin : MonoBehaviour
         int cols = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
 
         //Initializing the 2 dimensional list
-        this.tileMapInfo.TileGrid = new TileInfo[rows,cols];
+        this.tileMapInfo.TileGrid = new List<List<TileInfo>>(0);
 
         //Loops through to add as many rows as we need
         for(int r = 0; r < rows; ++r)
         {
+            List<TileInfo> newTileRow = new List<TileInfo>();
+
             //Loops through to add as many columns as we need
             for(int c = 0; c < cols; ++c)
             {
-                this.tileMapInfo.TileGrid[r, c] = new TileInfo();
+                newTileRow.Add(new TileInfo());
             }
+
+            //Pushes the new row to our tile grid
+            this.tileMapInfo.TileGrid.Add(newTileRow);
         }
     }
 
@@ -48,9 +53,25 @@ public class TileMapOrigin : MonoBehaviour
     public int DetermineGridChange(int newValue_ = 0, Directions changeDirection_ = Directions.None)
     {
         //Making sure that this tile grid is initialized
-        if (this.tileMapInfo.TileGrid == null)
+        if (this.tileMapInfo.TileGrid.Count == null)
         {
             this.InitializeTileGrid();
+
+            /*this.tileMapInfo.TileGrid = new List<List<TileInfo>>();
+
+            //Loops through to add as many columns as we need
+            for(int w = 0; w < (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight); ++w)
+            {
+                List<TileInfo> newListToAdd = new List<TileInfo>();
+
+                //Loops through each column to add as many rows as we need
+                for(int h = 0; h < (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown); ++h)
+                {
+                    newListToAdd.Add(new TileInfo());
+                }
+
+                this.tileMapInfo.TileGrid.Add(newListToAdd);
+            }*/
         }
 
         //If no value is added, no function is called
@@ -118,151 +139,75 @@ public class TileMapOrigin : MonoBehaviour
     //Function that increases the tile grid in the direction given
     public void IncreaseGrid(Directions direction_ = Directions.Right, int numToAdd_ = 1)
     {
-        Debug.Log("Increase Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
+        Debug.Log("Increase Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
         //Does nothing if the number to add isn't a positive number
         if (numToAdd_ < 1)
             return;
         
-        //Inserts new rows at the beginning of the outer array
+        //Inserts new rows at the beginning of the first list
         if (direction_ == Directions.Up)
         {
             this.tileMapInfo.TilesUp += numToAdd_;
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] biggerTileMap = new TileInfo[height, width];
-
-            //Initializing the new, empty rows to be filled with blank tiles
-            for(int h = 0; h < numToAdd_; ++h)
+            //Loops through a number of times equal to the num to add
+            for (int n = 0; n < numToAdd_; ++n)
             {
-                for(int w = 0; w < width; ++w)
-                {
-                    biggerTileMap[h, w] = new TileInfo();
-                }
+                List<TileInfo> newTopRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
+                this.tileMapInfo.TileGrid.Insert(0, newTopRow);
             }
-
-            //Nested loops to copy over all of the pre-existing tiles below the new rows
-            for (int r = 0; r < height; ++r)
-            {
-                for(int c = 0; c < width; ++c)
-                {
-                    //Copying over each tile to the new, offset location
-                    biggerTileMap[(r + (numToAdd_ - 1)), c] = this.tileMapInfo.TileGrid[r, c];
-                }
-            }
-
-            //Replacing the current array with the new array that has more rows
-            this.tileMapInfo.TileGrid = biggerTileMap;
         }
-        //Adds new rows at the end of the outer array
+        //Adds new rows at the end of the first list
         else if (direction_ == Directions.Down)
         {
             this.tileMapInfo.TilesDown += numToAdd_;
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] biggerTileMap = new TileInfo[height, width];
-
-            //Filling the new array with empty tiles
-            for(int h = 0; h < height; ++h)
+            //Loops through a number of times equal to the num to add
+            for (int n = 0; n < numToAdd_; ++n)
             {
-                for(int w = 0; w < width; ++w)
-                {
-                    biggerTileMap[h, w] = new TileInfo();
-                }
+                List<TileInfo> newBottomRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
+                this.tileMapInfo.TileGrid.Add(newBottomRow);
             }
-
-            //Nested loops to copy over all of the pre-existing tiles
-            for(int r = 0; r < height; ++r)
-            {
-                for(int c = 0; c < width; ++c)
-                {
-                    //Copying over each tile to the new array
-                    biggerTileMap[r, c] = this.tileMapInfo.TileGrid[r, c];
-                }
-            }
-
-            //Replacing the current array with the new array that has more rows
-            this.tileMapInfo.TileGrid = biggerTileMap;
         }
-        //Loops through each row in the first list and inserts new columns at the beginning of the inner arrays
+        //Loops through each row in the first list and inserts new columns at the beginning of the inner lists
         else if (direction_ == Directions.Left)
         {
             this.tileMapInfo.TilesLeft += numToAdd_;
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] biggerTileMap = new TileInfo[height, width];
-
-            //Filling the new array with empty tiles
-            for (int h = 0; h < height; ++h)
+            //Loops through each row
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
-                for (int w = 0; w < width; ++w)
+                for (int n = 0; n < numToAdd_; ++n)
                 {
-                    biggerTileMap[h, w] = new TileInfo();
+                    this.tileMapInfo.TileGrid[r].Insert(0, new TileInfo());
                 }
             }
-
-            //Nested loops to copy over all of the pre-existing tiles
-            for (int r = 0; r < height; ++r)
-            {
-                for (int c = (numToAdd_ - 1); c < width; ++c)
-                {
-                    //Copying over each tile to the new array
-                    biggerTileMap[r, c] = this.tileMapInfo.TileGrid[r, c];
-                }
-            }
-
-            //Replacing the current array with the new array that has more rows
-            this.tileMapInfo.TileGrid = biggerTileMap;
         }
-        //Loops through each row in the first list and inserts new columns at the end of the inner arrays
+        //Loops through each row in the first list and inserts new columns at the end of the inner lists
         else if (direction_ == Directions.Right)
         {
             this.tileMapInfo.TilesRight += numToAdd_;
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] biggerTileMap = new TileInfo[height, width];
-
-            //Filling the new array with empty tiles
-            for (int h = 0; h < height; ++h)
+            //Loops through each row
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
-                for (int w = 0; w < width; ++w)
+                for (int n = 0; n < numToAdd_; ++n)
                 {
-                    biggerTileMap[h, w] = new TileInfo();
+                    this.tileMapInfo.TileGrid[r].Add(new TileInfo());
                 }
             }
-
-            //Nested loops to copy over all of the pre-existing tiles
-            for (int r = 0; r < height; ++r)
-            {
-                for (int c = 0; c < this.tileMapInfo.TileGrid.GetLength(1); ++c)
-                {
-                    //Copying over each tile to the new array
-                    biggerTileMap[r, c] = this.tileMapInfo.TileGrid[r, c];
-                }
-            }
-
-            //Replacing the current array with the new array that has more rows
-            this.tileMapInfo.TileGrid = biggerTileMap;
         }
 
         Debug.Log("Call Paint Texture function still commented out");
         //Repaints the this tile map's texture
         //this.PaintTexture();
-        Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
+        Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
     }
 
 
     //Function that decreases the tile grid in the direction given
     public void DecreaseGrid(Directions direction_ = Directions.Right, int numToRemove_ = 1)
     {
-        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
+        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
         //Does nothing if the number to remove isn't a positive number
         if (numToRemove_ < 1)
             return;
@@ -278,25 +223,32 @@ public class TileMapOrigin : MonoBehaviour
                 tilesRemoved = this.tileMapInfo.TilesUp;
             }
 
+            //Makes sure the grid is at least 1 tile high
+            if (this.tileMapInfo.TilesDown == 0 && (this.tileMapInfo.TilesUp - tilesRemoved) == 0)
+            {
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile high");
+            }
+
             this.tileMapInfo.TilesUp -= tilesRemoved;
             Debug.Log("Up: " + this.tileMapInfo.TilesUp);
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] smallerTileMap = new TileInfo[height, width];
-
-            //Nested loops to copy over all of the existing tiles below the removed rows
-            for(int h = 0; h < height; ++h)
+            //Loops through a number of times equal to the rows removed
+            for (int n = 0; n < tilesRemoved; ++n)
             {
-                for(int w = 0; w < width; ++w)
+                Debug.Log("Inside first loop");
+                //Nulls and destroys each tile in the removed row
+                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
                 {
-                    smallerTileMap[h, w] = this.tileMapInfo.TileGrid[h + (tilesRemoved - 1),w];
+                    Debug.Log("Inside second loop");
+                    this.tileMapInfo.TileGrid[0][r] = null;
                 }
-            }
 
-            //Replacing the current array with the new array
-            this.tileMapInfo.TileGrid = smallerTileMap;
+                Debug.Log("Before remove");
+                Debug.Log("Before remove UP: " + this.tileMapInfo.TileGrid.Count);
+                this.tileMapInfo.TileGrid.RemoveAt(0);
+                Debug.Log("After remove UP: " + this.tileMapInfo.TileGrid.Count);
+            }
         }
         //Removes rows at the end of the first list
         else if (direction_ == Directions.Down)
@@ -307,25 +259,27 @@ public class TileMapOrigin : MonoBehaviour
                 tilesRemoved = this.tileMapInfo.TilesDown;
             }
 
-            this.tileMapInfo.TilesDown -= tilesRemoved;
-            Debug.Log("Down: " + this.tileMapInfo.TilesDown);
-
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] smallerTileMap = new TileInfo[height, width];
-
-            //Nested loops to copy over all of the existing tiles above the removed rows
-            for (int h = 0; h < height; ++h)
+            //Makes sure the grid is at least 1 tile high
+            if (this.tileMapInfo.TilesUp == 0 && (this.tileMapInfo.TilesDown - tilesRemoved) == 0)
             {
-                for (int w = 0; w < width; ++w)
-                {
-                    smallerTileMap[h, w] = this.tileMapInfo.TileGrid[h, w];
-                }
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile high");
             }
 
-            //Replacing the current array with the new array
-            this.tileMapInfo.TileGrid = smallerTileMap;
+            this.tileMapInfo.TilesDown -= tilesRemoved;
+            Debug.Log("Down: " + this.tileMapInfo.TilesDown);
+            
+            //Loops through a number of times equal to the rows removed
+            for (int n = 0; n < tilesRemoved; ++n)
+            {
+                //Nulls and destroys each tile in the removed row
+                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
+                {
+                    this.tileMapInfo.TileGrid[this.tileMapInfo.TileGrid.Count - 1][r] = null;
+                }
+
+                this.tileMapInfo.TileGrid.RemoveAt(this.tileMapInfo.TileGrid.Count - 1);
+            }
         }
         //Loops through each row in the first list and removes columns at the beginning of the inner lists
         else if (direction_ == Directions.Left)
@@ -338,22 +292,16 @@ public class TileMapOrigin : MonoBehaviour
 
             this.tileMapInfo.TilesLeft -= tilesRemoved;
 
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] smallerTileMap = new TileInfo[height, width];
-
-            //Nested loops to copy over all of the existing tiles below the removed rows
-            for (int h = 0; h < height; ++h)
+            //Loops through each row
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
-                for (int w = 0; w < width; ++w)
+                //Destroys, nulls, and removes the first tile in each row
+                for (int n = 0; n < tilesRemoved; ++n)
                 {
-                    smallerTileMap[h, w] = this.tileMapInfo.TileGrid[h, (w+1)];
+                    this.tileMapInfo.TileGrid[r][0] = null;
+                    this.tileMapInfo.TileGrid[r].RemoveAt(0);
                 }
             }
-
-            //Replacing the current array with the new array
-            this.tileMapInfo.TileGrid = smallerTileMap;
         }
         else if (direction_ == Directions.Right)
         {
@@ -364,29 +312,23 @@ public class TileMapOrigin : MonoBehaviour
             }
             
             this.tileMapInfo.TilesRight -= tilesRemoved;
-
-            //Creating a new TileInfo array with the added rows to replace our current array
-            int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
-            int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
-            TileInfo[,] smallerTileMap = new TileInfo[height, width];
-
-            //Nested loops to copy over all of the existing tiles below the removed rows
-            for (int h = 0; h < height; ++h)
+            
+            //Loops through each row
+            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
             {
-                for (int w = 0; w < width; ++w)
+                //Destroys, nulls, and removes the last tile in each row
+                for (int n = 0; n < tilesRemoved; ++n)
                 {
-                    smallerTileMap[h, w] = this.tileMapInfo.TileGrid[h, w];
+                    this.tileMapInfo.TileGrid[r][this.tileMapInfo.TileGrid[r].Count - 1] = null;
+                    this.tileMapInfo.TileGrid[r].RemoveAt(this.tileMapInfo.TileGrid[r].Count - 1);
                 }
             }
-
-            //Replacing the current array with the new array
-            this.tileMapInfo.TileGrid = smallerTileMap;
         }
 
         //Repaints the this tile map's texture
         this.PaintTexture();
 
-        Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
+        Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
     }
 
 
@@ -482,14 +424,14 @@ public class TileMapOrigin : MonoBehaviour
         //Sets the new tile to that position in the array of tiles
         if (tileToSet_ != null)
         {
-            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
-            this.tileMapInfo.TileGrid[row,col] = tileToSet_;
+            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[row].Count);
+            this.tileMapInfo.TileGrid[row][col] = tileToSet_;
         }
         //Otherwise, deletes the tile that's currently there
         else
         {
             Debug.Log("DELETE TILE");
-            this.tileMapInfo.TileGrid[row,col] = null;
+            this.tileMapInfo.TileGrid[row][col] = null;
         }
 
         //Repaints the this tile map's texture for this location only
@@ -501,17 +443,17 @@ public class TileMapOrigin : MonoBehaviour
     private void PaintTexture()
     {
         //Created a new Texture2D that will hold all of the pixel data for this tile map
-        Texture2D updatedTexture = new Texture2D(this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid.GetLength(0),
-                                                this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid.GetLength(1));
+        Texture2D updatedTexture = new Texture2D(this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid.Count,
+                                                this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid[0].Count);
 
         //This variable holds the color of the current pixel
         Color currentPixel;
 
         //Loops through each row of columns
-        for(int r = 0; r < this.tileMapInfo.TileGrid.GetLength(0); ++r)
+        for(int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
         {
             //Loops through each column of tiles
-            for(int c = 0; c < this.tileMapInfo.TileGrid.GetLength(1); ++c)
+            for(int c = 0; c < this.tileMapInfo.TileGrid[0].Count; ++c)
             {
                 //Loops through each pixel for the tile's width
                 for(int w = 0; w < this.tileMapInfo.TilePixelSize; ++w)
@@ -520,7 +462,7 @@ public class TileMapOrigin : MonoBehaviour
                     for(int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
                     {
                         //If the tile is null, we just put a blank, black tile
-                        if (this.tileMapInfo.TileGrid[r,c] == null)
+                        if (this.tileMapInfo.TileGrid[r][c] == null)
                         {
                             currentPixel = Color.black;
                         }
@@ -528,8 +470,8 @@ public class TileMapOrigin : MonoBehaviour
                         else
                         {
                             //Finding the exact pixel on the source tile map
-                            int pixelX = w + (this.tileMapInfo.TileGrid[r,c].tileTextureCoordsX * this.tileMapInfo.TilePixelSize);
-                            int pixelY = h + (this.tileMapInfo.TileGrid[r,c].tileTextureCoordsY * this.tileMapInfo.TilePixelSize);
+                            int pixelX = w + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsX * this.tileMapInfo.TilePixelSize);
+                            int pixelY = h + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsY * this.tileMapInfo.TilePixelSize);
 
                             //currentPixel = this.sourceTileSheet.texture.GetPixel(pixelX, pixelY);
                         }
@@ -555,7 +497,6 @@ public class TileMapOrigin : MonoBehaviour
     //Function called externally from TileMapEditor. Generates the base XML info for the new file
     public void GenerateBaseXML()
     {
-        Debug.Log("GenerateBaseXML 1");
         //If this tile map doesn't have an XML file, we can't do anything
         if (this.xmlFile == null)
         {
@@ -564,19 +505,16 @@ public class TileMapOrigin : MonoBehaviour
 
         //Creating a new, default TileMap class to be serialized and saved
         TileMap newTileMap = new TileMap();
-        Debug.Log("GenerateBaseXML 2");
 
         //Using an XML serializer and writer, we write this data to our XML file
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
         serializer.Serialize(writer.BaseStream, newTileMap);
         writer.Close();
-        Debug.Log("GenerateBaseXML 3");
 
 
         //Saving the new, default TileMap as our own
         this.tileMapInfo = newTileMap;
-        Debug.Log("GenerateBaseXML 4");
     }
 
 
@@ -616,9 +554,8 @@ public class TileMapOrigin : MonoBehaviour
 
         TileMap testMap = new TileMap();
         testMap = serializer.Deserialize(xElem.CreateReader()) as TileMap;
-        this.tileMapInfo = testMap;
-
-        /*List<List<TileInfo>> testGrid = new List<List<TileInfo>>();
+        
+        List<List<TileInfo>> testGrid = new List<List<TileInfo>>();
 
         //Debug.Log("TestMap height: " + (testMap.TilesUp + testMap.TilesDown) + ", width: " + (testMap.TilesLeft + testMap.TilesRight));
         //Debug.Log("TestMap Grid: " + testMap.TileGrid.Count + ", " + testMap.TileGrid[0].Count);
@@ -630,9 +567,9 @@ public class TileMapOrigin : MonoBehaviour
 
             for(int width=0; width < (testMap.TilesLeft + testMap.TilesRight); ++width)
             {
-                Debug.Log("Height: " + height + ", Width: " + width + " (Size: " + testMap.TileGrid.GetLength(0) + "," + testMap.TileGrid.GetLength(1) + ")");
+                Debug.Log("Height: " + height + ", Width: " + width + " (Size: " + testMap.TileGrid.Count + "," + testMap.TileGrid[0].Count + ")");
 
-                TileInfo currentTile = testMap.TileGrid[height,width];
+                TileInfo currentTile = testMap.TileGrid[height][width];
                 Debug.Log("MOO");
                 testGrid[height].Add(currentTile);
             }
@@ -643,7 +580,7 @@ public class TileMapOrigin : MonoBehaviour
         Debug.Log("Test grid size: " + testGrid.Count + ", " + testGrid[0].Count);
         testMap.TileGrid = testGrid;
         this.tileMapInfo = testMap;
-        return;*/
+        return;
 
         /*List<List<TileInfo>> testGrid = serializer.Deserialize(xElem.Element("TileGrid").CreateReader()) as List<List<TileInfo>>;
         Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@ grid size: " + testGrid.Count + ", " + testGrid[0].Count);
@@ -654,7 +591,7 @@ public class TileMapOrigin : MonoBehaviour
         }*/
 
 
-        /*TileMap loadedMap = serializer.Deserialize(memStream) as TileMap;
+        TileMap loadedMap = serializer.Deserialize(memStream) as TileMap;
         //this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
 
         Debug.Log("LoadExistingXML, existing map grid size start: " + loadedMap.TileGrid.Count + ", " + loadedMap.TileGrid[0].Count);
@@ -668,7 +605,7 @@ public class TileMapOrigin : MonoBehaviour
         }
 
         Debug.Log("LoadExistingXML, existing map grid size end: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
-        this.tileMapInfo = loadedMap;*/
+        this.tileMapInfo = loadedMap;
     }
 
 
@@ -676,7 +613,7 @@ public class TileMapOrigin : MonoBehaviour
     public void SaveTileMapData()
     {
         Debug.Log("SaveTileMapData Height/Width: " + (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown) + ", " + (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
-        Debug.Log("SaveTileMapData Grid Size: " + this.tileMapInfo.TileGrid.GetLength(0) + ", " + this.tileMapInfo.TileGrid.GetLength(1));
+        Debug.Log("SaveTileMapData Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
 
         //Using an XML serializer and writer, we write this data to our XML file
         XmlSerializer serializer = new XmlSerializer(typeof(TileMap));

@@ -23,7 +23,7 @@ public class TileMap
 
     //The 2D grid of TileInfo tiles that map up this map
     [XmlElement]
-    public TileInfo[,] TileGrid { get; set; }
+    public List<List<TileInfo>> TileGrid { get; set; }
 
     //The number of tiles above this map's origin
     [XmlElement]
@@ -61,9 +61,12 @@ public class TileMap
         this.TilesLeft = 0;
 
         //Creating a 1x1 2D array of tiles
-        this.TileGrid = new TileInfo[1,1]
+        this.TileGrid = new List<List<TileInfo>>()
         {
-            { new TileInfo(TestColors.Red) }
+            new List<TileInfo>()
+            {
+                new TileInfo(TestColors.Red)
+            }
         };
     }
 }
