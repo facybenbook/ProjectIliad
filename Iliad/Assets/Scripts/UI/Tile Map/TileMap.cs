@@ -1,44 +1,38 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
-using System.Xml;
-using System.Xml.Serialization;
 using System.Collections.Generic;
 
 
-[XmlRoot]
-[SerializeField]
-public class TileMap
+[Serializable]
+public class TileMap : UnityEngine.Object
 {
-    //The texture file that this tile map gets tiles from
-    /*[XmlElement]
-    public Texture SourceTexture { get; set; }*/
-
     //The height and width of each tile's image in pixels
-    [XmlElement]
+    [SerializeField]
     public int TilePixelSize { get; set; }
 
     //The height and width of each tile on the grid in units
-    [XmlElement]
+    [SerializeField]
     public float TileGridSize { get; set; }
 
     //The 2D grid of TileInfo tiles that map up this map
-    [XmlElement]
+    [SerializeField]
     public List<List<TileInfo>> TileGrid { get; set; }
 
     //The number of tiles above this map's origin
-    [XmlElement]
+    [SerializeField]
     public int TilesUp { get; set; }
 
     //The number of tiles below this map's origin
-    [XmlElement]
+    [SerializeField]
     public int TilesDown { get; set; }
 
     //The number of tiles left of this map's origin
-    [XmlElement]
+    [SerializeField]
     public int TilesLeft { get; set; }
 
     //The number of tiles right of this map's origin
-    [XmlElement]
+    [SerializeField]
     public int TilesRight { get; set; }
 
 

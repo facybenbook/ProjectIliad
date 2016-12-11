@@ -403,7 +403,7 @@ class TileMapEditor : EditorWindow
                     if(this.IsFileNameAllowed(this.tileMapFileName))
                     {
                         //Created a file path for the new xml file in the Resources folder
-                        string filePath = Application.dataPath + "/Resources/TileMapFiles/" + this.tileMapFileName + ".xml";
+                        string filePath = Application.dataPath + "/Resources/TileMapFiles/" + this.tileMapFileName + ".txt";
 
                         //Creating the file using the file path string and refreshing the asset database so it shows up in editor
                         System.IO.File.WriteAllText(filePath, "");

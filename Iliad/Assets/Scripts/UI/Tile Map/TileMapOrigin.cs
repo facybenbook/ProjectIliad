@@ -1,10 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml;
-using System.Xml.Serialization;
+using System;
 using System.IO;
 using System.Text;
+using System.Collections;
+using System.Xml.Serialization;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Runtime.Serialization;
+using Newtonsoft;
+using Newtonsoft.Json;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class TileMapOrigin : MonoBehaviour
@@ -506,10 +510,15 @@ public class TileMapOrigin : MonoBehaviour
         //Creating a new, default TileMap class to be serialized and saved
         TileMap newTileMap = new TileMap();
 
-        //Using an XML serializer and writer, we write this data to our XML file
-        XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
+        //Serializing the new tile map to a Json string
+        //string jsonString = JsonUtility.ToJson(newTileMap);
+        string jsonString = UnityEditor.EditorJsonUtility.ToJson(newTileMap, true);
+
+        Debug.Log("GenerateBaseXML, JSON string: " + jsonString);
+
+        //Writing the default TileMap to our text file
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        serializer.Serialize(writer.BaseStream, newTileMap);
+        writer.WriteLine(jsonString);
         writer.Close();
 
 
@@ -525,86 +534,12 @@ public class TileMapOrigin : MonoBehaviour
         if (this.xmlFile == null)
             return;
 
-        Debug.Log("LoadExistingXML file name: " + this.xmlFile.name);
+        //Loading the TileMap class from our text file
+        TileMap loadedMap = JsonUtility.FromJson<TileMap>(this.xmlFile.text);
 
-        //Creating a new XML document instance to load the data
-        XmlDocument doc = new XmlDocument();
-        doc.LoadXml(this.xmlFile.text);
+        Debug.Log("Loaded JSON map grid size: " + loadedMap.TileGrid.Count + ", " + loadedMap.TileGrid[0].Count);
 
-        //Making sure that the tileMapInfo isn't null before using it
-        if(this.tileMapInfo == null)
-        {
-            this.tileMapInfo = new TileMap();
-        }
-        //Converting the text from the xml file into a byte array
-        UTF8Encoding encoding = new UTF8Encoding();
-        byte[] byteArray = encoding.GetBytes(this.xmlFile.text);
-
-        //Then we create a memory stream for the byte array
-        MemoryStream memStream = new MemoryStream(byteArray);
-        XmlTextWriter textWriter = new XmlTextWriter(memStream, Encoding.UTF8);
-
-        //Deserialize the memory stream to load in the TileMap data
-        XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
-        
-        /*System.Xml.XmlReader xReader = System.Xml.XmlReader.
-        System.Xml.Linq.XDocument testLoadedMap = System.Xml.Linq.XDocument.Load(new XmlReader)*/
-        System.Xml.Linq.XElement xElem = System.Xml.Linq.XElement.Load(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        IEnumerable<System.Xml.Linq.XElement> xNode = xElem.Elements();
-
-        TileMap testMap = new TileMap();
-        testMap = serializer.Deserialize(xElem.CreateReader()) as TileMap;
-        
-        List<List<TileInfo>> testGrid = new List<List<TileInfo>>();
-
-        //Debug.Log("TestMap height: " + (testMap.TilesUp + testMap.TilesDown) + ", width: " + (testMap.TilesLeft + testMap.TilesRight));
-        //Debug.Log("TestMap Grid: " + testMap.TileGrid.Count + ", " + testMap.TileGrid[0].Count);
-
-        //Loops through and copy each row and height of tiles that are SUPPOSED to be there
-        for (int height=0; height < (testMap.TilesUp + testMap.TilesDown); ++height)
-        {
-            testGrid.Add(new List<TileInfo>(testMap.TilesLeft + testMap.TilesRight));
-
-            for(int width=0; width < (testMap.TilesLeft + testMap.TilesRight); ++width)
-            {
-                Debug.Log("Height: " + height + ", Width: " + width + " (Size: " + testMap.TileGrid.Count + "," + testMap.TileGrid[0].Count + ")");
-
-                TileInfo currentTile = testMap.TileGrid[height][width];
-                Debug.Log("MOO");
-                testGrid[height].Add(currentTile);
-            }
-
-            Debug.Log("New row----------------------------------------------");
-        }
-
-        Debug.Log("Test grid size: " + testGrid.Count + ", " + testGrid[0].Count);
-        testMap.TileGrid = testGrid;
-        this.tileMapInfo = testMap;
-        return;
-
-        /*List<List<TileInfo>> testGrid = serializer.Deserialize(xElem.Element("TileGrid").CreateReader()) as List<List<TileInfo>>;
-        Debug.Log("@@@@@@@@@@@@@@@@@@@@@@@ grid size: " + testGrid.Count + ", " + testGrid[0].Count);
-        Debug.Log("LoadExistingXML, testMap grid size: " + testMap.TileGrid.Count + ", " + testMap.TileGrid[0].Count);
-        foreach(var node in xNode)
-        {
-            Debug.Log(node.Value);
-        }*/
-
-
-        TileMap loadedMap = serializer.Deserialize(memStream) as TileMap;
-        //this.tileMapInfo = serializer.Deserialize(memStream) as TileMap;
-
-        Debug.Log("LoadExistingXML, existing map grid size start: " + loadedMap.TileGrid.Count + ", " + loadedMap.TileGrid[0].Count);
-
-        for(int r = 0; r < loadedMap.TileGrid.Count; ++r)
-        {
-            for(int p = 0; p < loadedMap.TileGrid[r].Count; ++p)
-            {
-                Debug.Log("Pos " + r + ", " + p + ": " + loadedMap.TileGrid[r][p].tileTestColor);
-            }
-        }
-
-        Debug.Log("LoadExistingXML, existing map grid size end: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        //Setting the loaded map as the one we'll use from here on out
         this.tileMapInfo = loadedMap;
     }
 
@@ -615,10 +550,21 @@ public class TileMapOrigin : MonoBehaviour
         Debug.Log("SaveTileMapData Height/Width: " + (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown) + ", " + (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
         Debug.Log("SaveTileMapData Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
 
-        //Using an XML serializer and writer, we write this data to our XML file
-        XmlSerializer serializer = new XmlSerializer(typeof(TileMap));
+        //Clearing the string from our text file
+        FileStream fstream = new FileStream(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile), FileMode.Truncate);
+
+        Debug.Log("File text (should be empty): " + this.xmlFile.text);
+
+        //Creating the string that holds our JSON information
+        //string jsonString = JsonUtility.ToJson(this.tileMapInfo, true);
+
+        string jsonString = JsonUtility.ToJson(this.tileMapInfo);
+
+        Debug.Log("JSON string: " + jsonString);
+
+        //Saving our current TileMap class as a JSON string to our text file
         StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        serializer.Serialize(writer.BaseStream, this.tileMapInfo);
+        writer.WriteLine(jsonString);
         writer.Close();
 
         //Refreshes the asset database so that we can look at the file and make sure it saved

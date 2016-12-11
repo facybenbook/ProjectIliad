@@ -1,24 +1,23 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Xml.Serialization;
 
-[XmlRoot]
-public class TileInfo
+[System.Serializable]
+public class TileInfo : Object
 {
     /*The tile coordinates on the source Tile Sheet in TileMapOrigin that serves as a starting
     point for getting exact pixels*/
-    [XmlElement]
+    [SerializeField]
     public int tileTextureCoordsX;
-    [XmlElement]
+    [SerializeField]
     public int tileTextureCoordsY;
 
     //Bool that determines if this tile is solid or not
-    [XmlElement]
+    [SerializeField]
     public bool isSolid = false;
 
     //Testing enum that should be removed
-    [XmlElement]
+    [SerializeField]
     public TestColors tileTestColor = TestColors.None;
 
 
