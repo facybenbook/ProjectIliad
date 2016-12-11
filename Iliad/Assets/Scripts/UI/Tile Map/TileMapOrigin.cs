@@ -1,14 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using System.IO;
-using System.Text;
-using System.Collections;
-using System.Xml.Serialization;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
-using Newtonsoft;
-using Newtonsoft.Json;
 
 [RequireComponent(typeof(SpriteRenderer))]
 public class TileMapOrigin : MonoBehaviour
@@ -498,35 +491,6 @@ public class TileMapOrigin : MonoBehaviour
     }
 
 
-    //Function called externally from TileMapEditor. Generates the base XML info for the new file
-    public void GenerateBaseXML()
-    {
-        //If this tile map doesn't have an XML file, we can't do anything
-        if (this.xmlFile == null)
-        {
-             return;
-        }
-
-        //Creating a new, default TileMap class to be serialized and saved
-        TileMap newTileMap = new TileMap();
-
-        //Serializing the new tile map to a Json string
-        //string jsonString = JsonUtility.ToJson(newTileMap);
-        string jsonString = UnityEditor.EditorJsonUtility.ToJson(newTileMap, true);
-
-        Debug.Log("GenerateBaseXML, JSON string: " + jsonString);
-
-        //Writing the default TileMap to our text file
-        StreamWriter writer = new StreamWriter(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile));
-        writer.WriteLine(jsonString);
-        writer.Close();
-
-
-        //Saving the new, default TileMap as our own
-        this.tileMapInfo = newTileMap;
-    }
-
-
     //Function called externally from TileMapEditor. Loads in data from a previously existing XML file
     public void LoadExistingXML()
     {
@@ -547,18 +511,26 @@ public class TileMapOrigin : MonoBehaviour
     //Function called internally to write this Tile Map's data to its given XML file
     public void SaveTileMapData()
     {
-        Debug.Log("SaveTileMapData Height/Width: " + (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown) + ", " + (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight));
-        Debug.Log("SaveTileMapData Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        //Makes sure that this tile map origin actually has a tile map class
+        if(this.tileMapInfo == null)
+        {
+            this.tileMapInfo = new TileMap();
+        }
 
-        //Clearing the string from our text file
-        FileStream fstream = new FileStream(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile), FileMode.Truncate);
+        //Clearing the string from our text file if needed
+        if(this.xmlFile.text != "")
+        {
+            FileStream fstream = new FileStream(UnityEditor.AssetDatabase.GetAssetPath(this.xmlFile), FileMode.Truncate);
+        }
 
         Debug.Log("File text (should be empty): " + this.xmlFile.text);
 
         //Creating the string that holds our JSON information
-        //string jsonString = JsonUtility.ToJson(this.tileMapInfo, true);
 
-        string jsonString = JsonUtility.ToJson(this.tileMapInfo);
+        Pie myPie = new Pie();
+
+
+        string jsonString = UnityEditor.EditorJsonUtility.ToJson(myPie, true);
 
         Debug.Log("JSON string: " + jsonString);
 
@@ -574,4 +546,16 @@ public class TileMapOrigin : MonoBehaviour
 
     //Create function "GenerateCollider" that creates a custom mesh for this map
     //Create function "CleanUpVerts" that combines duplicate verts on the mesh collider
+}
+
+
+[Serializable]
+public class Pie : System.Object
+{
+    [SerializeField]
+    public List<List<TileInfo>> pieTiles = new List<List<TileInfo>>(2)
+    {
+        new List<TileInfo>(1) { new TileInfo(TestColors.None) },
+        new List<TileInfo>(1) { new TileInfo(TestColors.Green) }
+    };
 }

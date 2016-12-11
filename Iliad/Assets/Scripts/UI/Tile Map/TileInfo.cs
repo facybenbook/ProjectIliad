@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+using System;
 
-[System.Serializable]
-public class TileInfo : Object
+[Serializable]
+public class TileInfo : System.Object
 {
     /*The tile coordinates on the source Tile Sheet in TileMapOrigin that serves as a starting
     point for getting exact pixels*/

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Xml;
 
 class TileMapEditor : EditorWindow
 {
@@ -415,9 +414,6 @@ class TileMapEditor : EditorWindow
                 //Sets the xml source file for the selected map origin to the newly created xml file
                 xmlFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;
                 this.mapOrigin.xmlFile = xmlFile;
-
-                //Tells the tile map to set up the XML info for the new file
-                this.mapOrigin.GenerateBaseXML();
 
                 //Sets the selected tile map and scene as "dirty" which means that they need to be saved
                 UnityEditor.Undo.RecordObject(this.mapOrigin.gameObject, "Set XML File as Text Asset");

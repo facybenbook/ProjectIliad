@@ -1,11 +1,10 @@
 ﻿using UnityEngine;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 
 [Serializable]
-public class TileMap : UnityEngine.Object
+public class TileMap : System.Object
 {
     //The height and width of each tile's image in pixels
     [SerializeField]
