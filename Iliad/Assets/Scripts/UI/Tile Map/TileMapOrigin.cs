@@ -27,21 +27,12 @@ public class TileMapOrigin : MonoBehaviour
         int cols = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
 
         //Initializing the 2 dimensional list
-        this.tileMapInfo.TileGrid = new List<List<TileInfo>>(0);
+        this.tileMapInfo.TileGrid = new List<TileInfo>(rows * cols);
 
         //Loops through to add as many rows as we need
-        for(int r = 0; r < rows; ++r)
+        for(int t = 0; t < this.tileMapInfo.TileGrid.Count; ++t)
         {
-            List<TileInfo> newTileRow = new List<TileInfo>();
-
-            //Loops through to add as many columns as we need
-            for(int c = 0; c < cols; ++c)
-            {
-                newTileRow.Add(new TileInfo());
-            }
-
-            //Pushes the new row to our tile grid
-            this.tileMapInfo.TileGrid.Add(newTileRow);
+            this.tileMapInfo.TileGrid[t] = new TileInfo();
         }
     }
 
@@ -49,28 +40,6 @@ public class TileMapOrigin : MonoBehaviour
     //Function called from TileMapEditor when this tile map's grid is changed. Determines whether IncreaseGrid or DecreaseGrid are called
     public int DetermineGridChange(int newValue_ = 0, Directions changeDirection_ = Directions.None)
     {
-        //Making sure that this tile grid is initialized
-        if (this.tileMapInfo.TileGrid.Count == null)
-        {
-            this.InitializeTileGrid();
-
-            /*this.tileMapInfo.TileGrid = new List<List<TileInfo>>();
-
-            //Loops through to add as many columns as we need
-            for(int w = 0; w < (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight); ++w)
-            {
-                List<TileInfo> newListToAdd = new List<TileInfo>();
-
-                //Loops through each column to add as many rows as we need
-                for(int h = 0; h < (this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown); ++h)
-                {
-                    newListToAdd.Add(new TileInfo());
-                }
-
-                this.tileMapInfo.TileGrid.Add(newListToAdd);
-            }*/
-        }
-
         //If no value is added, no function is called
         if (newValue_ < 0 || changeDirection_ == Directions.None)
         {
@@ -136,7 +105,7 @@ public class TileMapOrigin : MonoBehaviour
     //Function that increases the tile grid in the direction given
     public void IncreaseGrid(Directions direction_ = Directions.Right, int numToAdd_ = 1)
     {
-        Debug.Log("Increase Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        Debug.Log("Increase Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count);
         //Does nothing if the number to add isn't a positive number
         if (numToAdd_ < 1)
             return;
@@ -146,11 +115,13 @@ public class TileMapOrigin : MonoBehaviour
         {
             this.tileMapInfo.TilesUp += numToAdd_;
 
+            int totalTilesToAdd = numToAdd_ * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight);
+
             //Loops through a number of times equal to the num to add
-            for (int n = 0; n < numToAdd_; ++n)
+            for (int n = 0; n < totalTilesToAdd; ++n)
             {
-                List<TileInfo> newTopRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
-                this.tileMapInfo.TileGrid.Insert(0, newTopRow);
+                //Inserts a new tile at the beginning of the current list
+                this.tileMapInfo.TileGrid.Insert(0, new TileInfo());
             }
         }
         //Adds new rows at the end of the first list
@@ -158,11 +129,14 @@ public class TileMapOrigin : MonoBehaviour
         {
             this.tileMapInfo.TilesDown += numToAdd_;
 
+            int totalTilesToAdd = numToAdd_ * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight);
+
             //Loops through a number of times equal to the num to add
-            for (int n = 0; n < numToAdd_; ++n)
+            for (int n = 0; n < totalTilesToAdd; ++n)
             {
-                List<TileInfo> newBottomRow = new List<TileInfo>(this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight) { new TileInfo() };
-                this.tileMapInfo.TileGrid.Add(newBottomRow);
+                //Inserts a new tile at the end of the current list
+                int posToAdd = this.tileMapInfo.TileGrid.Count - 1;
+                this.tileMapInfo.TileGrid.Insert(posToAdd, new TileInfo());
             }
         }
         //Loops through each row in the first list and inserts new columns at the beginning of the inner lists
@@ -170,12 +144,26 @@ public class TileMapOrigin : MonoBehaviour
         {
             this.tileMapInfo.TilesLeft += numToAdd_;
 
+            //Getting the number of rows and columns that make up this grid
+            int row = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+            int col = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
             //Loops through each row
-            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
+            for (int r = 0; r < row; ++r)
             {
-                for (int n = 0; n < numToAdd_; ++n)
+                //Loops through each column
+                for (int c = 0; c < col; ++c)
                 {
-                    this.tileMapInfo.TileGrid[r].Insert(0, new TileInfo());
+                    //If we're at the beginning of a new row, we need to add empty tiles
+                    if (c < numToAdd_)
+                    {
+                        //Finding the exact spot in the list using the row and column offsets
+                        int tilePos = (r * row) + c;
+                        //Inserting a new tile at the position
+                        this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo());
+                        //Increasing the column counter since we added to the count
+                        c += 1;
+                    }
                 }
             }
         }
@@ -184,12 +172,26 @@ public class TileMapOrigin : MonoBehaviour
         {
             this.tileMapInfo.TilesRight += numToAdd_;
 
+            //Getting the number of rows and columns that make up this grid
+            int row = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+            int col = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
             //Loops through each row
-            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
+            for (int r = 0; r < row; ++r)
             {
-                for (int n = 0; n < numToAdd_; ++n)
+                //Loops through each column
+                for (int c = 0; c < col; ++c)
                 {
-                    this.tileMapInfo.TileGrid[r].Add(new TileInfo());
+                    //If we're at the end of the row, we need to add empty tiles
+                    if (c > (col - numToAdd_))
+                    {
+                        //Finding the exact spot in the list using the row and column offsets
+                        int tilePos = (r * row) + c;
+                        //Inserting a new tile at the position
+                        this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo());
+                        //Increasing the column counter since we added to the count
+                        c += 1;
+                    }
                 }
             }
         }
@@ -197,21 +199,21 @@ public class TileMapOrigin : MonoBehaviour
         Debug.Log("Call Paint Texture function still commented out");
         //Repaints the this tile map's texture
         //this.PaintTexture();
-        Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count);
     }
 
 
     //Function that decreases the tile grid in the direction given
     public void DecreaseGrid(Directions direction_ = Directions.Right, int numToRemove_ = 1)
     {
-        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        Debug.Log("Decrease Grid Start. Grid Size: " + this.tileMapInfo.TileGrid.Count);
         //Does nothing if the number to remove isn't a positive number
         if (numToRemove_ < 1)
             return;
         
         int tilesRemoved = numToRemove_;
 
-        //Removes rows at the end of the first list
+        //Removes rows starting from the beginning of the list
         if (direction_ == Directions.Up)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
@@ -228,26 +230,14 @@ public class TileMapOrigin : MonoBehaviour
             }
 
             this.tileMapInfo.TilesUp -= tilesRemoved;
-            Debug.Log("Up: " + this.tileMapInfo.TilesUp);
 
-            //Loops through a number of times equal to the rows removed
-            for (int n = 0; n < tilesRemoved; ++n)
-            {
-                Debug.Log("Inside first loop");
-                //Nulls and destroys each tile in the removed row
-                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
-                {
-                    Debug.Log("Inside second loop");
-                    this.tileMapInfo.TileGrid[0][r] = null;
-                }
+            //Find the number of individual tiles to remove based on how many tiles are in a row
+            int tilesToPop = tilesRemoved * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight);
 
-                Debug.Log("Before remove");
-                Debug.Log("Before remove UP: " + this.tileMapInfo.TileGrid.Count);
-                this.tileMapInfo.TileGrid.RemoveAt(0);
-                Debug.Log("After remove UP: " + this.tileMapInfo.TileGrid.Count);
-            }
+            //Removes the number of needed tiles starting from the beginning
+            this.tileMapInfo.TileGrid.RemoveRange(0, tilesToPop);
         }
-        //Removes rows at the end of the first list
+        //Removes rows at the end of the list
         else if (direction_ == Directions.Down)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
@@ -264,19 +254,15 @@ public class TileMapOrigin : MonoBehaviour
             }
 
             this.tileMapInfo.TilesDown -= tilesRemoved;
-            Debug.Log("Down: " + this.tileMapInfo.TilesDown);
-            
-            //Loops through a number of times equal to the rows removed
-            for (int n = 0; n < tilesRemoved; ++n)
-            {
-                //Nulls and destroys each tile in the removed row
-                for (int r = 0; r < this.tileMapInfo.TileGrid[0].Count; ++r)
-                {
-                    this.tileMapInfo.TileGrid[this.tileMapInfo.TileGrid.Count - 1][r] = null;
-                }
 
-                this.tileMapInfo.TileGrid.RemoveAt(this.tileMapInfo.TileGrid.Count - 1);
-            }
+            //Find the number of individual tiles to remove based on how many tiles are in a row
+            int tilesToPop = tilesRemoved * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight);
+
+            //Finds the index where we should start removing tiles
+            int endPoint = this.tileMapInfo.TileGrid.Count - tilesToPop;
+
+            //Removes the number of needed tiles starting from the end point
+            this.tileMapInfo.TileGrid.RemoveRange(endPoint, tilesToPop);
         }
         //Loops through each row in the first list and removes columns at the beginning of the inner lists
         else if (direction_ == Directions.Left)
@@ -287,19 +273,30 @@ public class TileMapOrigin : MonoBehaviour
                 tilesRemoved = this.tileMapInfo.TilesLeft;
             }
 
+            //Makes sure the grid is at least 1 tile wide
+            if (this.tileMapInfo.TilesLeft == 0 && (this.tileMapInfo.TilesRight - tilesRemoved) == 0)
+            {
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile wide");
+            }
+
             this.tileMapInfo.TilesLeft -= tilesRemoved;
 
+            //Getting the number of rows and columns that make up this grid
+            int row = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+            int col = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
             //Loops through each row
-            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
+            for (int r = 0; r < row; ++r)
             {
-                //Destroys, nulls, and removes the first tile in each row
-                for (int n = 0; n < tilesRemoved; ++n)
+                //Loops through each column
+                for(int c = 0; c < col; ++c)
                 {
-                    this.tileMapInfo.TileGrid[r][0] = null;
-                    this.tileMapInfo.TileGrid[r].RemoveAt(0);
+
                 }
             }
         }
+        //
         else if (direction_ == Directions.Right)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
@@ -501,7 +498,7 @@ public class TileMapOrigin : MonoBehaviour
         //Loading the TileMap class from our text file
         TileMap loadedMap = JsonUtility.FromJson<TileMap>(this.xmlFile.text);
 
-        Debug.Log("Loaded JSON map grid size: " + loadedMap.TileGrid.Count + ", " + loadedMap.TileGrid[0].Count);
+        Debug.Log("Loaded JSON map grid size: " + loadedMap.TileGrid.Count);
 
         //Setting the loaded map as the one we'll use from here on out
         this.tileMapInfo = loadedMap;

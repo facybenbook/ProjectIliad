@@ -16,7 +16,7 @@ public class TileMap : System.Object
 
     //The 2D grid of TileInfo tiles that map up this map
     [SerializeField]
-    public List<List<TileInfo>> TileGrid { get; set; }
+    public List<TileInfo> TileGrid { get; set; }
 
     //The number of tiles above this map's origin
     [SerializeField]
@@ -54,12 +54,9 @@ public class TileMap : System.Object
         this.TilesLeft = 0;
 
         //Creating a 1x1 2D array of tiles
-        this.TileGrid = new List<List<TileInfo>>()
+        this.TileGrid = new List<TileInfo>()
         {
-            new List<TileInfo>()
-            {
-                new TileInfo(TestColors.Red)
-            }
+            new TileInfo(TestColors.Red)
         };
     }
 }
