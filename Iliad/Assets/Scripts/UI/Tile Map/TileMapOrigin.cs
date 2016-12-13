@@ -7,6 +7,7 @@ using System.Collections.Generic;
 public class TileMapOrigin : MonoBehaviour
 {
     //The TileMap class that we save to the JSON file
+    [HideInInspector]
     public TileMap tileMapInfo = new TileMap();
 
     //The file path that holds this tile map's JSON data file
@@ -508,15 +509,23 @@ public class TileMapOrigin : MonoBehaviour
     }
 
 
-    //Function called externally from TileMapEditor. Loads in data from a previously existing JSON file
+    //Function called externally from TileMapEditor. Loads in data from a previously existing text file
     public void LoadExistingJSON()
     {
-        //Can't load an existing JSON if it doesn't exist....
+        //Can't load a file if it doesn't exist....
         if (this.jsonFile == null)
             return;
 
-        //Loading the TileMap class from our text file
-        TileMap loadedMap = JsonUtility.FromJson<TileMap>(this.jsonFile.text);
+        //Creating a stream reader so we can get the JSON string our text file contains
+        StreamReader reader = new StreamReader(UnityEditor.AssetDatabase.GetAssetPath(this.jsonFile));
+        string jsonText = reader.ReadToEnd();
+        reader.Close();
+
+        Debug.Log("Load JSON stream reader string: " + jsonText);
+
+        //Loading the TileMap class from our text file's string
+        TileMap loadedMap = JsonUtility.FromJson<TileMap>(jsonText);
+        
 
         Debug.Log("Loaded JSON map grid size: " + loadedMap.TileGrid.Count);
 
@@ -525,7 +534,7 @@ public class TileMapOrigin : MonoBehaviour
     }
 
 
-    //Function called internally to write this Tile Map's data to its given JSON file
+    //Function called internally to write this Tile Map's data to its given text file
     public void SaveTileMapData()
     {
         //Makes sure that this tile map origin actually has a tile map class
@@ -538,6 +547,7 @@ public class TileMapOrigin : MonoBehaviour
         if(this.jsonFile.text != "")
         {
             FileStream fstream = new FileStream(UnityEditor.AssetDatabase.GetAssetPath(this.jsonFile), FileMode.Truncate);
+            fstream.Close();
         }
 
         Debug.Log("File text (should be empty): " + this.jsonFile.text);

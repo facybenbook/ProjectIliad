@@ -1,0 +1,46 @@
+{
+    "TilePixelSize": 32,
+    "TileGridSize": 1.0,
+    "TileGrid": [
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 0
+        },
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 0
+        },
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 0
+        },
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 0
+        },
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 0
+        },
+        {
+            "tileTextureCoordsX": 0,
+            "tileTextureCoordsY": 0,
+            "isSolid": false,
+            "tileTestColor": 1
+        }
+    ],
+    "TilesUp": 1,
+    "TilesDown": 5,
+    "TilesLeft": 0,
+    "TilesRight": 1
+}
