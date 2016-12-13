@@ -69,7 +69,7 @@ class TileMapEditor : EditorWindow
     private void OnGUI()
     {
         //If the user is selecting an object that has a Tile Map and a text source, the map's settings can be changed
-        if (this.mapOrigin != null && this.mapOrigin.xmlFile != null)
+        if (this.mapOrigin != null && this.mapOrigin.jsonFile != null)
         {
             //Begins a check to see if any properties are changed
             EditorGUI.BeginChangeCheck();
@@ -82,8 +82,8 @@ class TileMapEditor : EditorWindow
             //Setting it so that this whole editor is within a scroll view
             this.scrollPos = GUILayout.BeginScrollView(this.scrollPos, true, true);
 
-            //Creating a button that tells the selected tile map to save its data to an XML
-            bool shouldSave = GUILayout.Button("Save XML", GUILayout.Width(300));
+            //Creating a button that tells the selected tile map to save its data to a text file in JSON
+            bool shouldSave = GUILayout.Button("Save JSON", GUILayout.Width(300));
             if(shouldSave)
             {
                 this.mapOrigin.SaveTileMapData();
@@ -362,7 +362,7 @@ class TileMapEditor : EditorWindow
             }
         }
         //If the user is selecting an object that has a Tile Map but DOESN'T have a text source, they must create one
-        else if(this.mapOrigin != null && this.mapOrigin.xmlFile == null)
+        else if(this.mapOrigin != null && this.mapOrigin.jsonFile == null)
         {
             //Created a few labels and a text field telling the user that they have to create a file to save map data
             GUILayout.Label("This tile map has no save document.");
@@ -380,7 +380,7 @@ class TileMapEditor : EditorWindow
             //Created a button that generates a new text source for the selected tile map
             if(GUILayout.Button("Create New Save"))
             {
-                TextAsset xmlFile;
+                TextAsset jsonFile;
 
                 //First we check to see if a file with that name exists. If not, it's created
                 if(Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) == null)
@@ -412,15 +412,15 @@ class TileMapEditor : EditorWindow
 
 
                 //Sets the xml source file for the selected map origin to the newly created xml file
-                xmlFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;
-                this.mapOrigin.xmlFile = xmlFile;
+                jsonFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;
+                this.mapOrigin.jsonFile = jsonFile;
 
                 //Sets the selected tile map and scene as "dirty" which means that they need to be saved
-                UnityEditor.Undo.RecordObject(this.mapOrigin.gameObject, "Set XML File as Text Asset");
+                UnityEditor.Undo.RecordObject(this.mapOrigin.gameObject, "Set JSON File as Text Asset");
                 EditorUtility.SetDirty(this.mapOrigin.gameObject);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
 
-                //Saves the XML file
+                //Saves the JSON file
                 this.mapOrigin.SaveTileMapData();
             }
 
@@ -466,8 +466,8 @@ class TileMapEditor : EditorWindow
         //Draws a rectangle on screen to show where the tiles are occupying
         if (this.showTileMapSize && this.mapOrigin != null)
         {
-            //If the selected tile map has no XML file, we don't show the rectangle
-            if (this.mapOrigin.xmlFile != null)
+            //If the selected tile map has no JSON file, we don't show the rectangle
+            if (this.mapOrigin.jsonFile != null)
             {
                 this.DrawTileMapRectangle();
             }
@@ -485,7 +485,7 @@ class TileMapEditor : EditorWindow
             this.mapOrigin = Selection.gameObjects[0].GetComponent<TileMapOrigin>();
 
             //Tells the map origin to load its data from the xml file
-            this.mapOrigin.LoadExistingXML();
+            this.mapOrigin.LoadExistingJSON();
         }
         //If the object selected doesn't have a Tile Map
         else
