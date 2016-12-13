@@ -264,7 +264,7 @@ public class TileMapOrigin : MonoBehaviour
             //Removes the number of needed tiles starting from the end point
             this.tileMapInfo.TileGrid.RemoveRange(endPoint, tilesToPop);
         }
-        //Loops through each row in the first list and removes columns at the beginning of the inner lists
+        //Removes tiles at the beginning of each row
         else if (direction_ == Directions.Left)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
@@ -289,14 +289,14 @@ public class TileMapOrigin : MonoBehaviour
             //Loops through each row
             for (int r = 0; r < row; ++r)
             {
-                //Loops through each column
-                for(int c = 0; c < col; ++c)
-                {
+                //The index where we start removing tiles from in this loop
+                int startIndex = r * col;
 
-                }
+                //Removing the correct number of tiles from the start of this row
+                this.tileMapInfo.TileGrid.RemoveRange(startIndex, tilesRemoved);
             }
         }
-        //
+        //Removes tiles at the end of each row
         else if (direction_ == Directions.Right)
         {
             //Makes sure that we can't subtract from a direction enough to drop below 0
@@ -304,25 +304,35 @@ public class TileMapOrigin : MonoBehaviour
             {
                 tilesRemoved = this.tileMapInfo.TilesRight;
             }
-            
-            this.tileMapInfo.TilesRight -= tilesRemoved;
-            
-            //Loops through each row
-            for (int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
+
+            //Makes sure the grid is at least 1 tile wide
+            if (this.tileMapInfo.TilesRight == 0 && (this.tileMapInfo.TilesLeft - tilesRemoved) == 0)
             {
-                //Destroys, nulls, and removes the last tile in each row
-                for (int n = 0; n < tilesRemoved; ++n)
-                {
-                    this.tileMapInfo.TileGrid[r][this.tileMapInfo.TileGrid[r].Count - 1] = null;
-                    this.tileMapInfo.TileGrid[r].RemoveAt(this.tileMapInfo.TileGrid[r].Count - 1);
-                }
+                tilesRemoved -= 1;
+                Debug.LogWarning("WARNING: The tile map grid needs to be at least 1 tile wide");
+            }
+
+            this.tileMapInfo.TilesRight -= tilesRemoved;
+
+            //Getting the number of rows and columns that make up this grid
+            int row = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+            int col = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
+            //Loops through each row
+            for (int r = 0; r < row; ++r)
+            {
+                //The index where we start removing tiles from in this loop
+                int startIndex = (r * col) + (row - tilesRemoved);
+
+                //Removing the correct number of tiles from the end of this row
+                this.tileMapInfo.TileGrid.RemoveRange(startIndex, tilesRemoved);
             }
         }
 
         //Repaints the this tile map's texture
         this.PaintTexture();
 
-        Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[0].Count);
+        Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count);
     }
 
 
@@ -418,14 +428,20 @@ public class TileMapOrigin : MonoBehaviour
         //Sets the new tile to that position in the array of tiles
         if (tileToSet_ != null)
         {
-            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.Count + ", " + this.tileMapInfo.TileGrid[row].Count);
-            this.tileMapInfo.TileGrid[row][col] = tileToSet_;
+            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.Count);
+
+            //Finding the correct index in the grid to set
+            int indexToChange = (row * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight)) + col;
+            this.tileMapInfo.TileGrid[indexToChange] = tileToSet_;
         }
-        //Otherwise, deletes the tile that's currently there
+        //Otherwise, replaces the tile that's currently there with an empty tile
         else
         {
             Debug.Log("DELETE TILE");
-            this.tileMapInfo.TileGrid[row][col] = null;
+
+            //Finding the correct index in the grid to set
+            int indexToChange = (row * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight)) + col;
+            this.tileMapInfo.TileGrid[indexToChange] = new TileInfo();
         }
 
         //Repaints the this tile map's texture for this location only
@@ -436,18 +452,22 @@ public class TileMapOrigin : MonoBehaviour
     //Function called from Increase/DecreaseGrid. Sets the individual pixels for each tile placed
     private void PaintTexture()
     {
+        //Getting the number of rows and columns for reference
+        int row = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+        int col = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+
         //Created a new Texture2D that will hold all of the pixel data for this tile map
-        Texture2D updatedTexture = new Texture2D(this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid.Count,
-                                                this.tileMapInfo.TilePixelSize * this.tileMapInfo.TileGrid[0].Count);
+        Texture2D updatedTexture = new Texture2D(this.tileMapInfo.TilePixelSize * row,
+                                                this.tileMapInfo.TilePixelSize * col);
 
         //This variable holds the color of the current pixel
         Color currentPixel;
 
         //Loops through each row of columns
-        for(int r = 0; r < this.tileMapInfo.TileGrid.Count; ++r)
+        for(int r = 0; r < row; ++r)
         {
             //Loops through each column of tiles
-            for(int c = 0; c < this.tileMapInfo.TileGrid[0].Count; ++c)
+            for(int c = 0; c < col; ++c)
             {
                 //Loops through each pixel for the tile's width
                 for(int w = 0; w < this.tileMapInfo.TilePixelSize; ++w)
@@ -456,7 +476,7 @@ public class TileMapOrigin : MonoBehaviour
                     for(int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
                     {
                         //If the tile is null, we just put a blank, black tile
-                        if (this.tileMapInfo.TileGrid[r][c] == null)
+                        if (this.tileMapInfo.TileGrid[GetRowColIndex(r, c)] == null)
                         {
                             currentPixel = Color.black;
                         }
@@ -464,8 +484,8 @@ public class TileMapOrigin : MonoBehaviour
                         else
                         {
                             //Finding the exact pixel on the source tile map
-                            int pixelX = w + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsX * this.tileMapInfo.TilePixelSize);
-                            int pixelY = h + (this.tileMapInfo.TileGrid[r][c].tileTextureCoordsY * this.tileMapInfo.TilePixelSize);
+                            int pixelX = w + (this.tileMapInfo.TileGrid[GetRowColIndex(r, c)].tileTextureCoordsX * this.tileMapInfo.TilePixelSize);
+                            int pixelY = h + (this.tileMapInfo.TileGrid[GetRowColIndex(r, c)].tileTextureCoordsY * this.tileMapInfo.TilePixelSize);
 
                             //currentPixel = this.sourceTileSheet.texture.GetPixel(pixelX, pixelY);
                         }
@@ -514,6 +534,10 @@ public class TileMapOrigin : MonoBehaviour
             this.tileMapInfo = new TileMap();
         }
 
+        Pie myPie = new Pie();
+        string jsonPie = UnityEditor.EditorJsonUtility.ToJson(myPie, true);
+        Debug.Log("My JSON Pie: " + jsonPie);
+
         //Clearing the string from our text file if needed
         if(this.xmlFile.text != "")
         {
@@ -523,11 +547,7 @@ public class TileMapOrigin : MonoBehaviour
         Debug.Log("File text (should be empty): " + this.xmlFile.text);
 
         //Creating the string that holds our JSON information
-
-        Pie myPie = new Pie();
-
-
-        string jsonString = UnityEditor.EditorJsonUtility.ToJson(myPie, true);
+        string jsonString = UnityEditor.EditorJsonUtility.ToJson(this.tileMapInfo, true);
 
         Debug.Log("JSON string: " + jsonString);
 
@@ -541,6 +561,26 @@ public class TileMapOrigin : MonoBehaviour
     }
 
 
+    //Private function used to find the correct index in the list when given a row and column
+    private int GetRowColIndex(int row_, int col_)
+    {
+        //Making sure that both the row and column given aren't less than 0
+        if(row_ < 0 || col_ < 0)
+        {
+            Debug.LogError("ERROR! TileMapOrigin.GetRowColIndex, parameters CANNOT be less than 0!");
+            return 0;
+        }
+
+        //Creating an int that will be returned
+        int returnIndex = 0;
+
+        //Getting the index using the row and column given
+        returnIndex += row_ * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight);
+        returnIndex += col_;
+
+        return returnIndex;
+    }
+
     //Create function "GenerateCollider" that creates a custom mesh for this map
     //Create function "CleanUpVerts" that combines duplicate verts on the mesh collider
 }
@@ -550,9 +590,24 @@ public class TileMapOrigin : MonoBehaviour
 public class Pie : System.Object
 {
     [SerializeField]
-    public List<List<TileInfo>> pieTiles = new List<List<TileInfo>>(2)
+    public List<TileInfo> pieTiles;
+
+    [SerializeField]
+    public float notTitanic;
+
+    [SerializeField]
+    public TileMap questionMark;
+
+
+    public Pie()
     {
-        new List<TileInfo>(1) { new TileInfo(TestColors.None) },
-        new List<TileInfo>(1) { new TileInfo(TestColors.Green) }
-    };
+        pieTiles = new List<TileInfo>()
+        {
+            new TileInfo(TestColors.Green)
+        };
+
+        notTitanic = 0.5f;
+
+        questionMark = new TileMap();
+    }
 }

@@ -8,31 +8,31 @@ public class TileMap : System.Object
 {
     //The height and width of each tile's image in pixels
     [SerializeField]
-    public int TilePixelSize { get; set; }
+    public int TilePixelSize;
 
     //The height and width of each tile on the grid in units
     [SerializeField]
-    public float TileGridSize { get; set; }
+    public float TileGridSize;
 
     //The 2D grid of TileInfo tiles that map up this map
     [SerializeField]
-    public List<TileInfo> TileGrid { get; set; }
+    public List<TileInfo> TileGrid;
 
     //The number of tiles above this map's origin
     [SerializeField]
-    public int TilesUp { get; set; }
+    public int TilesUp;
 
     //The number of tiles below this map's origin
     [SerializeField]
-    public int TilesDown { get; set; }
+    public int TilesDown;
 
     //The number of tiles left of this map's origin
     [SerializeField]
-    public int TilesLeft { get; set; }
+    public int TilesLeft;
 
     //The number of tiles right of this map's origin
     [SerializeField]
-    public int TilesRight { get; set; }
+    public int TilesRight;
 
 
 
