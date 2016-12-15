@@ -122,7 +122,7 @@ public class TileMapOrigin : MonoBehaviour
             for (int n = 0; n < totalTilesToAdd; ++n)
             {
                 //Inserts a new tile at the beginning of the current list
-                this.tileMapInfo.TileGrid.Insert(0, new TileInfo());
+                this.tileMapInfo.TileGrid.Insert(0, new TileInfo(TestColors.Red));
             }
         }
         //Adds new rows at the end of the first list
@@ -136,8 +136,8 @@ public class TileMapOrigin : MonoBehaviour
             for (int n = 0; n < totalTilesToAdd; ++n)
             {
                 //Inserts a new tile at the end of the current list
-                int posToAdd = this.tileMapInfo.TileGrid.Count - 1;
-                this.tileMapInfo.TileGrid.Insert(posToAdd, new TileInfo());
+                int posToAdd = this.tileMapInfo.TileGrid.Count;
+                this.tileMapInfo.TileGrid.Insert(posToAdd, new TileInfo(TestColors.Blue));
             }
         }
         //Loops through each row in the first list and inserts new columns at the beginning of the inner lists
@@ -152,19 +152,20 @@ public class TileMapOrigin : MonoBehaviour
             //Loops through each row
             for (int r = 0; r < row; ++r)
             {
-                //Loops through each column
-                for (int c = 0; c < col; ++c)
+                //Loops through each tile to add in this row
+                for (int t = 0; t < numToAdd_; ++t)
                 {
-                    //If we're at the beginning of a new row, we need to add empty tiles
-                    if (c < numToAdd_)
+                    //Finding the exact spot in the list using the row and column offsets
+                    int tilePos = (r * row);
+
+                    //Adds an offset if we aren't in the first row
+                    if(r > 0)
                     {
-                        //Finding the exact spot in the list using the row and column offsets
-                        int tilePos = (r * row) + c;
-                        //Inserting a new tile at the position
-                        this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo());
-                        //Increasing the column counter since we added to the count
-                        c += 1;
+                        tilePos += numToAdd_;
                     }
+
+                    //Inserting a new tile at the position
+                    this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo(TestColors.Green));
                 }
             }
         }
@@ -189,7 +190,7 @@ public class TileMapOrigin : MonoBehaviour
                         //Finding the exact spot in the list using the row and column offsets
                         int tilePos = (r * row) + c;
                         //Inserting a new tile at the position
-                        this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo());
+                        this.tileMapInfo.TileGrid.Insert(tilePos, new TileInfo(TestColors.Yellow));
                         //Increasing the column counter since we added to the count
                         c += 1;
                     }
@@ -441,7 +442,8 @@ public class TileMapOrigin : MonoBehaviour
             Debug.Log("DELETE TILE");
 
             //Finding the correct index in the grid to set
-            int indexToChange = (row * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight)) + col;
+            int indexToChange = this.GetRowColIndex(row, col);
+            //Sets the tile to a new, blank tile
             this.tileMapInfo.TileGrid[indexToChange] = new TileInfo();
         }
 
@@ -476,12 +478,13 @@ public class TileMapOrigin : MonoBehaviour
                     //Loops through each pixel for the tile's height
                     for(int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
                     {
-                        //If the tile is null, we just put a blank, black tile
-                        if (this.tileMapInfo.TileGrid[GetRowColIndex(r, c)] == null)
+                        //If the tile is blank (XY coords less than 0) we place an invisible pixel
+                        if (this.tileMapInfo.TileGrid[GetRowColIndex(r, c)].tileTextureCoordsX < 0 ||
+                            this.tileMapInfo.TileGrid[GetRowColIndex(r, c)].tileTextureCoordsY < 0)
                         {
-                            currentPixel = Color.black;
+                            currentPixel = new Vector4(0,0,0,0);
                         }
-                        //If the tile isn't null, we find the current pixel on the tile
+                        //If the tile isn't blank, we find the current pixel on the tile
                         else
                         {
                             //Finding the exact pixel on the source tile map
@@ -521,13 +524,8 @@ public class TileMapOrigin : MonoBehaviour
         string jsonText = reader.ReadToEnd();
         reader.Close();
 
-        Debug.Log("Load JSON stream reader string: " + jsonText);
-
         //Loading the TileMap class from our text file's string
         TileMap loadedMap = JsonUtility.FromJson<TileMap>(jsonText);
-        
-
-        Debug.Log("Loaded JSON map grid size: " + loadedMap.TileGrid.Count);
 
         //Setting the loaded map as the one we'll use from here on out
         this.tileMapInfo = loadedMap;
@@ -549,8 +547,6 @@ public class TileMapOrigin : MonoBehaviour
             FileStream fstream = new FileStream(UnityEditor.AssetDatabase.GetAssetPath(this.jsonFile), FileMode.Truncate);
             fstream.Close();
         }
-
-        Debug.Log("File text (should be empty): " + this.jsonFile.text);
 
         //Creating the string that holds our JSON information
         string jsonString = UnityEditor.EditorJsonUtility.ToJson(this.tileMapInfo, true);

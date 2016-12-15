@@ -410,6 +410,8 @@ class TileMapEditor : EditorWindow
                     }
                 }
 
+                //Resets the selected map origin's tile map
+                this.mapOrigin.tileMapInfo = new TileMap();
 
                 //Sets the xml source file for the selected map origin to the newly created xml file
                 jsonFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;

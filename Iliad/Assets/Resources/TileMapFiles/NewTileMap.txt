@@ -3,44 +3,32 @@
     "TileGridSize": 1.0,
     "TileGrid": [
         {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
+            "tileTextureCoordsX": -1,
+            "tileTextureCoordsY": -1,
             "isSolid": false,
             "tileTestColor": 0
         },
         {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
+            "tileTextureCoordsX": -1,
+            "tileTextureCoordsY": -1,
             "isSolid": false,
             "tileTestColor": 0
         },
         {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
+            "tileTextureCoordsX": -1,
+            "tileTextureCoordsY": -1,
             "isSolid": false,
             "tileTestColor": 0
         },
         {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
+            "tileTextureCoordsX": -1,
+            "tileTextureCoordsY": -1,
             "isSolid": false,
             "tileTestColor": 0
-        },
-        {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
-            "isSolid": false,
-            "tileTestColor": 0
-        },
-        {
-            "tileTextureCoordsX": 0,
-            "tileTextureCoordsY": 0,
-            "isSolid": false,
-            "tileTestColor": 1
         }
     ],
     "TilesUp": 1,
-    "TilesDown": 5,
-    "TilesLeft": 0,
+    "TilesDown": 1,
+    "TilesLeft": 1,
     "TilesRight": 1
 }

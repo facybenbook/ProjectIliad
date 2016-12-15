@@ -24,16 +24,16 @@ public class TileInfo : System.Object
     //Default constructor
     public TileInfo()
     {
-        this.tileTextureCoordsX = 0;
-        this.tileTextureCoordsY = 0;
+        this.tileTextureCoordsX = -1;
+        this.tileTextureCoordsY = -1;
         this.isSolid = false;
     }
 
     //Test constructor
     public TileInfo(TestColors color)
     {
-        this.tileTextureCoordsX = 0;
-        this.tileTextureCoordsY = 0;
+        this.tileTextureCoordsX = -1;
+        this.tileTextureCoordsY = -1;
         this.isSolid = false;
 
         tileTestColor = color;
