@@ -1,6 +1,5 @@
 {
     "TilePixelSize": 32,
-    "TileGridSize": 1.0,
     "TileGrid": [
         {
             "tileTextureCoordsX": -1,

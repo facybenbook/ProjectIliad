@@ -37,6 +37,9 @@ class TileMapEditor : EditorWindow
     //Boolean that shows/hides the editor color foldout
     private bool showColorPicker = false;
 
+    //Int that's used when creating a new tile map. Sets the pixel width of tiles
+    int tilePixelWidth = 32;
+
     //UI Colors for this editor that the user can change
     private Color outlineColor = Color.green;
     private Color outlineEditColor = Color.red;
@@ -96,18 +99,7 @@ class TileMapEditor : EditorWindow
                 EditorGUI.indentLevel++;
 
                 //Created a field where the user can select the sprite that this map uses as a texture
-                this.tileMapSprite = EditorGUILayout.ObjectField("Tile Map Texture Sprite", this.tileMapSprite, typeof(Sprite),
-                                                        GUILayout.Width(250)) as Sprite;
-
-                //Created an input field to set the number of pixels shown for each tile
-                this.mapOrigin.tileMapInfo.TilePixelSize = EditorGUILayout.IntField("Tile Pixel Size", this.mapOrigin.tileMapInfo.TilePixelSize, GUILayout.Width(200));
-                if (this.mapOrigin.tileMapInfo.TilePixelSize < 1)
-                {
-                    this.mapOrigin.tileMapInfo.TilePixelSize = 1;
-                }
-
-                //Created an input field to set the width/height of tiles on the map
-                this.mapOrigin.tileMapInfo.TileGridSize = EditorGUILayout.FloatField("Tile Grid Height/Width", this.mapOrigin.tileMapInfo.TileGridSize, GUILayout.Width(200));
+                this.tileMapSprite = EditorGUILayout.ObjectField("Tile Map Texture Sprite", this.tileMapSprite, typeof(Sprite), GUILayout.Width(250)) as Sprite;
 
 
                 EditorGUILayout.Space();
@@ -372,6 +364,20 @@ class TileMapEditor : EditorWindow
             EditorGUILayout.Space();
             EditorGUILayout.Space();
 
+            //Created an input field for how many pixels wide/high each tile is
+            this.tilePixelWidth = EditorGUILayout.IntField("Tile Pixel Width: ", this.tilePixelWidth, GUILayout.Width(200));
+            //Making sure that tiles can't have a width less than 1 pixel or more than 256 pixels
+            if(this.tilePixelWidth < 0)
+            {
+                this.tilePixelWidth = 1;
+            }
+            else if(this.tilePixelWidth > 256)
+            {
+                this.tilePixelWidth = 256;
+            }
+
+            EditorGUILayout.Space();
+
             GUILayout.BeginHorizontal(GUILayout.Width(275));
             GUILayout.Label("New tile map file name:  ");
             this.tileMapFileName = GUILayout.TextField(this.tileMapFileName);
@@ -412,6 +418,7 @@ class TileMapEditor : EditorWindow
 
                 //Resets the selected map origin's tile map
                 this.mapOrigin.tileMapInfo = new TileMap();
+                this.mapOrigin.tileMapInfo.TilePixelSize = this.tilePixelWidth;
 
                 //Sets the xml source file for the selected map origin to the newly created xml file
                 jsonFile = Resources.Load("TileMapFiles/" + this.tileMapFileName, typeof(TextAsset)) as TextAsset;
@@ -454,7 +461,8 @@ class TileMapEditor : EditorWindow
                 //When the user left clicks, we tell the Tile Map Origin that we want to add a tile to the location
                 if (Event.current.button == 0)
                 {
-                    TileInfo addedTile = new TileInfo(this.selectedTile[0], this.selectedTile[1]);          
+                    TileInfo addedTile = new TileInfo(this.selectedTile[0] * this.mapOrigin.tileMapInfo.TilePixelSize,
+                                                    this.selectedTile[1] * this.mapOrigin.tileMapInfo.TilePixelSize);          
                     this.mapOrigin.SetTile(clickPos, addedTile);
                 }
                 //When the user right clicks, we tell the Tile Map Origin that we want to remove a tile at the location
@@ -504,21 +512,24 @@ class TileMapEditor : EditorWindow
     //Function called from SceneGUI. Draws a rectangle outlining the area covered by the tile map's size
     private void DrawTileMapRectangle()
     {
+        float xScale = this.mapOrigin.gameObject.transform.localScale.x;
+        float yScale = this.mapOrigin.gameObject.transform.localScale.y;
+
         //Creating an array of points that will make up the rectangle
         Vector3[] verts = new Vector3[]
         {
             //Top Left
-            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft,
-                        this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
+            new Vector3((this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft) * xScale,
+                        (this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp) * yScale, 0),
             //Top Right
-            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight,
-                        this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
+            new Vector3((this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight) * xScale,
+                        (this.mapOrigin.transform.position.y + this.mapOrigin.tileMapInfo.TilesUp) * yScale, 0),
             //Bottom Right
-            new Vector3(this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight,
-                        this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown, 0) * this.mapOrigin.tileMapInfo.TileGridSize,
+            new Vector3((this.mapOrigin.transform.position.x + this.mapOrigin.tileMapInfo.TilesRight) * xScale,
+                        (this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown) * yScale, 0),
             //Bottom Left
-            new Vector3(this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft,
-                        this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown, 0) * this.mapOrigin.tileMapInfo.TileGridSize
+            new Vector3((this.mapOrigin.transform.position.x - this.mapOrigin.tileMapInfo.TilesLeft) * xScale,
+                        (this.mapOrigin.transform.position.y - this.mapOrigin.tileMapInfo.TilesDown) * yScale, 0)
         };
 
         //Creating variables for the box's color

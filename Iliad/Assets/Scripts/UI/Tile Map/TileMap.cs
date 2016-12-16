@@ -10,10 +10,6 @@ public class TileMap : System.Object
     [SerializeField]
     public int TilePixelSize;
 
-    //The height and width of each tile on the grid in units
-    [SerializeField]
-    public float TileGridSize;
-
     //The 2D grid of TileInfo tiles that map up this map
     [SerializeField]
     public List<TileInfo> TileGrid;
@@ -41,8 +37,6 @@ public class TileMap : System.Object
     {
         //The number of pixels wide/high each tile is
         this.TilePixelSize = 32;
-        //The width/height of the tiles on the Unity grid
-        this.TileGridSize = 1;
 
         //The number of rows above the origin
         this.TilesUp = 1;

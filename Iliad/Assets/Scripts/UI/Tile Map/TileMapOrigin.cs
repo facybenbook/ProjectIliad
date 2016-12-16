@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-[RequireComponent(typeof(SpriteRenderer))]
+[RequireComponent(typeof(MeshFilter))]
 public class TileMapOrigin : MonoBehaviour
 {
     //The TileMap class that we save to the JSON file
@@ -15,7 +15,7 @@ public class TileMapOrigin : MonoBehaviour
 
     //The source image that this tile map uses to texture each tile
     [HideInInspector]
-    public Texture sourceTileSheet = null;
+    public Texture2D sourceTileSheet = null;
 
 
     
@@ -198,9 +198,10 @@ public class TileMapOrigin : MonoBehaviour
             }
         }
 
-        Debug.Log("Call Paint Texture function still commented out");
-        //Repaints the this tile map's texture
-        //this.PaintTexture();
+
+        //Rebuilds the tile mesh and repaints the this tile map's texture
+        this.GenerateTileMesh();
+        this.PaintTexture();
         Debug.Log("Increase Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count);
     }
 
@@ -331,7 +332,9 @@ public class TileMapOrigin : MonoBehaviour
             }
         }
 
-        //Repaints the this tile map's texture
+
+        //Rebuilds the tile mesh and repaints the this tile map's texture
+        this.GenerateTileMesh();
         this.PaintTexture();
 
         Debug.Log("Decrease Grid End. Grid Size: " + this.tileMapInfo.TileGrid.Count);
@@ -348,22 +351,22 @@ public class TileMapOrigin : MonoBehaviour
         float roundedXCoord = localPos.x;
         if (roundedXCoord >= 0)
         {
-            roundedXCoord = Mathf.Ceil(roundedXCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
+            roundedXCoord = Mathf.Ceil(roundedXCoord / this.transform.localScale.x) * this.transform.localScale.x;
         }
         else
         {
-            roundedXCoord = Mathf.Floor(roundedXCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
+            roundedXCoord = Mathf.Floor(roundedXCoord / this.transform.localScale.x) * this.transform.localScale.x;
         }
 
         //And we do the same for the local Y position as well
         float roundedYCoord = localPos.y;
         if (roundedYCoord >= 0)
         {
-            roundedYCoord = Mathf.Ceil(roundedYCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
+            roundedYCoord = Mathf.Ceil(roundedYCoord / this.transform.localScale.y) * this.transform.localScale.y;
         }
         else
         {
-            roundedYCoord = Mathf.Floor(roundedYCoord / this.tileMapInfo.TileGridSize) * this.tileMapInfo.TileGridSize;
+            roundedYCoord = Mathf.Floor(roundedYCoord / this.transform.localScale.y) * this.transform.localScale.y;
         }
 
         /*Sets the local position to the new, rounded grid locations, and
@@ -378,7 +381,7 @@ public class TileMapOrigin : MonoBehaviour
         if (localPos.x >= 0 && localPos.y >= 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x > (this.tileMapInfo.TilesRight * this.tileMapInfo.TileGridSize) || localPos.y > (this.tileMapInfo.TilesUp * this.tileMapInfo.TileGridSize))
+            if (localPos.x > (this.tileMapInfo.TilesRight * this.transform.localScale.x) || localPos.y > (this.tileMapInfo.TilesUp * this.transform.localScale.y))
             {
                 return;
             }
@@ -391,7 +394,7 @@ public class TileMapOrigin : MonoBehaviour
         else if (localPos.x < 0 && localPos.y >= 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.tileMapInfo.TileGridSize) || localPos.y > (this.tileMapInfo.TilesUp * this.tileMapInfo.TileGridSize))
+            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.transform.localScale.x) || localPos.y > (this.tileMapInfo.TilesUp * this.transform.localScale.y))
             {
                 return;
             }
@@ -404,7 +407,7 @@ public class TileMapOrigin : MonoBehaviour
         else if (localPos.x < 0 && localPos.y < 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.tileMapInfo.TileGridSize) || localPos.y < (-this.tileMapInfo.TilesDown * this.tileMapInfo.TileGridSize))
+            if (localPos.x < (-this.tileMapInfo.TilesLeft * this.transform.localScale.x) || localPos.y < (-this.tileMapInfo.TilesDown * this.transform.localScale.y))
             {
                 return;
             }
@@ -417,7 +420,7 @@ public class TileMapOrigin : MonoBehaviour
         else if (localPos.x >= 0 && localPos.y < 0)
         {
             //Does nothing if the X or Y coords are out of bounds
-            if (localPos.x > (this.tileMapInfo.TilesRight * this.tileMapInfo.TileGridSize) || localPos.y < -(this.tileMapInfo.TilesDown * this.tileMapInfo.TileGridSize))
+            if (localPos.x > (this.tileMapInfo.TilesRight * this.transform.localScale.x) || localPos.y < -(this.tileMapInfo.TilesDown * this.transform.localScale.y))
             {
                 return;
             }
@@ -430,8 +433,6 @@ public class TileMapOrigin : MonoBehaviour
         //Sets the new tile to that position in the array of tiles
         if (tileToSet_ != null)
         {
-            Debug.Log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Grid Size: " + this.tileMapInfo.TileGrid.Count);
-
             //Finding the correct index in the grid to set
             int indexToChange = (row * (this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight)) + col;
             this.tileMapInfo.TileGrid[indexToChange] = tileToSet_;
@@ -505,10 +506,72 @@ public class TileMapOrigin : MonoBehaviour
     }
 
 
-    //Function called from SetTile. Paints pixels for a single tile instead of the whole texture (like PaintTexture)
+    /*Function called from SetTile. Paints pixels for a single tile instead of the whole texture (like PaintTexture)
+    Takes the row and column of the tile in the grid so we know where on the texture to paint, and the newly added tile */
     private void PaintSingularTile(int row_ = 0, int col_ = 0, TileInfo newTile_ = null)
     {
+        Debug.Log("Paint Singular Tile function called. Sprite UV's: " + this.GetComponent<SpriteRenderer>().sprite.uv.Length);
+        MeshFilter ourMeshFilter = this.GetComponent<MeshFilter>();
 
+        //If our Mesh Filter has no mesh, we'll just generate it and paint everything
+        if(ourMeshFilter.mesh == null)
+        {
+            //Creating the tile mesh
+            this.GenerateTileMesh();
+            //Painting the whole mesh
+            this.PaintTexture();
+            //Exiting this function since we already painted everything
+            return;
+        }
+
+        /*
+        //Finding the starting XY pixel coordinates on the texture where we need to start painting
+        int startingX = col_ * this.tileMapInfo.TilePixelSize;
+        int startingY = row_ * this.tileMapInfo.TilePixelSize;
+        
+        //If the tile given is empty (has invalid XY pixel co-ordinates), we clear that spot in the texture
+        if(newTile_.tileTextureCoordsX < 0 || newTile_.tileTextureCoordsY < 0)
+        {
+            //Loops through for each pixel high the tile is
+            for(int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
+            {
+                //Loops through for each pixel wide the tile is
+                for(int w = 0; w < this.tileMapInfo.TilePixelSize; ++w)
+                {
+                    //Getting the exact pixel that we're coloring
+                    int pixelToPaintX = startingX + w;
+                    int pixelToPaintY = startingY + h;
+
+                    //Getting the color that we're painting the pixel from the source texture
+                    Color textureColor = this.sourceTileSheet.GetPixel(newTile_.tileTextureCoordsX + w, newTile_.tileTextureCoordsY + h);
+
+                    //Setting the color of the pixel to the matching pixel from the source texture
+                    textureToPaint.SetPixel(pixelToPaintX, pixelToPaintY, textureColor);
+                }
+            }
+        }
+        //Otherwise, the given tile isn't empty and can be painted
+        else
+        {
+            //Creating the see-through color that we're going to use on all pixels that this tile covers
+            Color invisibleColor = new Color(0,0,0,0);
+
+            //Loops through for each pixel high the tile is
+            for (int h = 0; h < this.tileMapInfo.TilePixelSize; ++h)
+            {
+                //Loops through for each pixel wide the tile is
+                for (int w = 0; w < this.tileMapInfo.TilePixelSize; ++w)
+                {
+                    //Getting the exact pixel that we're coloring
+                    int pixelToPaintX = startingX + w;
+                    int pixelToPaintY = startingY + h;
+
+                    //Setting the color of the pixel to the invisible color
+                    textureToPaint.SetPixel(pixelToPaintX, pixelToPaintY, invisibleColor);
+                }
+            }
+        }
+        */
     }
 
 
@@ -581,6 +644,68 @@ public class TileMapOrigin : MonoBehaviour
         returnIndex += col_;
 
         return returnIndex;
+    }
+
+
+    //Private function called from IncreaseGrid and DecreaseGrid. Resizes the mesh that our texture is painted on
+    private void GenerateTileMesh()
+    {
+        //Finding the number of tiles wide and high the map is
+        int width = this.tileMapInfo.TilesLeft + this.tileMapInfo.TilesRight;
+        int height = this.tileMapInfo.TilesUp + this.tileMapInfo.TilesDown;
+
+        //Creating an array of points where the mesh vertices will be spawned
+        Vector3[] meshVerts = new Vector3[(width + 1) * (height + 1)];
+
+        //Tracker for the current vertex index we're setting
+        int currentVert = 0;
+
+        //The starting xy position offset from the tile map center
+        float startingX = this.transform.localScale.x * this.tileMapInfo.TilesLeft;
+        float startingY = this.transform.localScale.y * this.tileMapInfo.TilesUp;
+
+        //Finding all of the mesh vertex points using this object's scale and the number of tiles
+        //Loops through each row
+        for(int h = 0; h <= height; ++h)
+        {
+            //Loops through each column
+            for(int w = 0; w <= width; ++w)
+            {
+                //Finding the offset from the starting position
+                float offsetX = startingX + (this.transform.localScale.x * width);
+                float offsetY = startingY + (this.transform.localScale.y * height);
+
+                //Sets the current vertex to the correct position in space
+                meshVerts[currentVert] = new Vector3(offsetX, offsetY);
+
+                //Go to the next vertex
+                ++currentVert;
+            }
+        }
+
+        //Creating an array of triangle that makes up the mesh
+        int[] meshTriangles = new int[width * height * 6];
+
+        //Generating each triangle in the mesh using the mesh vertices
+        //Looping through each row
+        for(int r = 0; r < height; ++r)
+        {
+            //Looping through each column
+            for(int c = 0; c < width; ++c)
+            {
+                //First triangle of the tile
+                
+            }
+        }
+
+
+        //Creating the mesh using our array of vertices and triangles
+        Mesh ourMesh = new Mesh();
+        ourMesh.vertices = meshVerts;
+        ourMesh.triangles = meshTriangles;
+
+        //Sets our new mesh to the one this object's MeshFilter uses
+        this.GetComponent<MeshFilter>().mesh = ourMesh;
     }
 
     //Create function "GenerateCollider" that creates a custom mesh for this map
